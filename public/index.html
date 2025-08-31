@@ -9,29 +9,49 @@
 </head>
 <body>
   <div class="container">
-  <h1 style="margin-bottom: 24px; text-align: center;">Task Manager</h1>
-    <form id="task-form" style="margin-bottom: 24px;">
-      <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 10px;">
-  <input type="text" id="task-input" placeholder="Enter a new task" required style="width: 18%; min-width: 80px;" />
-  <textarea id="task-detail-input" placeholder="Enter task details (optional)" style="width: 32%; min-width: 120px; height: 80px; resize: vertical; border-radius: 10px; padding: 12px; font-size: 1.08em; background: rgba(255,255,255,0.85); border: 1.5px solid #90cdf4; margin-bottom: 8px;"></textarea>
-        <button type="submit" style="width: 120px;">Add Task</button>
+    <h1 style="margin-bottom: 24px; text-align: center;">Task Manager</h1>
+    <div style="display: flex; flex-direction: row; gap: 32px; align-items: flex-start; margin-bottom: 24px;">
+      <form id="task-form" style="flex: 1;">
+        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 10px;">
+          <input type="text" id="task-input" placeholder="Enter a new task" required style="width: 80%; min-width: 80px;" />
+          <textarea id="task-detail-input" placeholder="Enter task details (optional)" style="width: 100%; min-width: 120px; height: 80px; resize: vertical; border-radius: 10px; padding: 12px; font-size: 1.08em; background: rgba(255,255,255,0.85); border: 1.5px solid #90cdf4; margin-bottom: 8px;"></textarea>
+          <button type="submit" style="width: 120px;">Add Task</button>
+        </div>
+      </form>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; align-items: flex-end;">
+        <div style="display: flex; flex-direction: row; align-items: center; gap: 10px;">
+          <label for="filter-dropdown" style="font-weight: 600; margin-bottom: 0;">Filter Tasks:</label>
+          <select id="filter-dropdown" style="width: 180px; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;">
+            <option value="all">All</option>
+            <option value="completed">Completed</option>
+            <option value="incomplete">Incomplete</option>
+          </select>
+        </div>
+        <div style="display: flex; flex-direction: row; gap: 8px; margin-top: 8px;">
+          <button id="bulk-delete-btn" style="background: linear-gradient(90deg, #ef4444 0%, #f87171 100%); color: #fff; border: none; border-radius: 5px; padding: 6px 14px; cursor: pointer; font-weight: 500; font-size: 0.98em; box-shadow: 0 1px 4px rgba(239,68,68,0.08); transition: background 0.2s, box-shadow 0.2s; display: flex; align-items: center; gap: 6px;">
+            <span style="font-size:1.1em;">&#128465;</span> Delete
+          </button>
+          <button id="bulk-complete-btn" style="background: linear-gradient(90deg, #38ef7d 0%, #2563eb 100%); color: #fff; border: none; border-radius: 5px; padding: 6px 14px; cursor: pointer; font-weight: 500; font-size: 0.98em; box-shadow: 0 1px 4px rgba(56,239,125,0.08); transition: background 0.2s, box-shadow 0.2s; display: flex; align-items: center; gap: 6px;" disabled>
+            <span style="font-size:1.1em;">&#10003;</span> Complete
+          </button>
+          <button id="bulk-incomplete-btn" style="background: linear-gradient(90deg, #fbbf24 0%, #f59e42 100%); color: #fff; border: none; border-radius: 5px; padding: 6px 14px; cursor: pointer; font-weight: 500; font-size: 0.98em; box-shadow: 0 1px 4px rgba(251,191,36,0.08); transition: background 0.2s, box-shadow 0.2s; display: flex; align-items: center; gap: 6px;" disabled>
+            <span style="font-size:1.1em;">&#8634;</span> Incomplete
+          </button>
+        </div>
       </div>
-    </form>
-    <div style="margin-bottom: 24px; display: flex; flex-direction: row; justify-content: flex-end; align-items: center; width: 100%;">
-      <label for="filter-dropdown" style="font-weight: 600; margin-bottom: 0; margin-right: 10px;">Filter Tasks:</label>
-      <select id="filter-dropdown" style="width: 220px; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;">
-        <option value="all">All</option>
-        <option value="completed">Completed</option>
-        <option value="incomplete">Incomplete</option>
-      </select>
     </div>
-    </form>
-  <!-- Bulk Actions menu removed -->
     <hr style="margin: 24px 0;" />
     <table id="task-table" style="width:100%; margin-bottom:24px; border-radius:12px; overflow:hidden; background:rgba(255,255,255,0.6); box-shadow:0 2px 12px rgba(99,102,241,0.07);">
       <thead>
         <tr style="background:#f3f4f6;">
-          <th style="padding:12px 8px;"><input type="checkbox" id="select-all-checkbox" /></th>
+          <th style="padding:12px 8px;">
+            <div style="display: flex; justify-content: center; align-items: center; height: 22px;">
+              <label class="custom-checkbox" style="margin-bottom: 0;">
+                <input type="checkbox" id="select-all-checkbox" />
+                <span class="checkmark"></span>
+              </label>
+            </div>
+          </th>
           <th style="padding:12px 8px;">Name</th>
           <th style="padding:12px 8px;">Status</th>
           <th style="padding:12px 8px; text-align:center;">Actions</th>

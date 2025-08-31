@@ -1,8 +1,8 @@
 window.bulkCompleteSelected = async function(complete) {
   // Only update checked tasks that are currently visible (rendered in DOM)
-  const visibleCheckedBoxes = Array.from(document.querySelectorAll('#task-list li .bulk-checkbox:checked'));
+  const visibleCheckedBoxes = Array.from(document.querySelectorAll('.bulk-checkbox:checked'));
   for (const cb of visibleCheckedBoxes) {
-    const id = cb.getAttribute('data-id');
+    const id = cb.getAttribute('data-task-id');
     await fetch(`${API_URL}/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -10,6 +10,11 @@ window.bulkCompleteSelected = async function(complete) {
     });
   }
   fetchTasks();
+  // Uncheck all checkboxes after action
+  const allCheckboxes = document.querySelectorAll('.bulk-checkbox');
+  allCheckboxes.forEach(cb => cb.checked = false);
+  const selectAllCheckbox = document.getElementById('select-all-checkbox');
+  if (selectAllCheckbox) selectAllCheckbox.checked = false;
 }
 window.filterTasks = function(type) {
   currentFilter = type;
@@ -39,16 +44,41 @@ window.addEventListener('DOMContentLoaded', () => {
       window.filterTasks(this.value);
     });
   }
+
+  // Bulk action buttons
+  const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+  if (bulkDeleteBtn) {
+    bulkDeleteBtn.onclick = function() {
+      window.bulkDeleteSelected();
+    };
+  }
+  const bulkCompleteBtn = document.getElementById('bulk-complete-btn');
+  if (bulkCompleteBtn) {
+    bulkCompleteBtn.onclick = function() {
+      window.bulkCompleteSelected(true);
+    };
+  }
+  const bulkIncompleteBtn = document.getElementById('bulk-incomplete-btn');
+  if (bulkIncompleteBtn) {
+    bulkIncompleteBtn.onclick = function() {
+      window.bulkCompleteSelected(false);
+    };
+  }
 });
 
 window.bulkDeleteSelected = async function() {
   // Find all checked checkboxes and delete corresponding tasks
   const checkedBoxes = document.querySelectorAll('.bulk-checkbox:checked');
   for (const cb of checkedBoxes) {
-    const id = cb.getAttribute('data-id');
+    const id = cb.getAttribute('data-task-id');
     await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
   }
   fetchTasks();
+  // Uncheck all checkboxes after action
+  const allCheckboxes = document.querySelectorAll('.bulk-checkbox');
+  allCheckboxes.forEach(cb => cb.checked = false);
+  const selectAllCheckbox = document.getElementById('select-all-checkbox');
+  if (selectAllCheckbox) selectAllCheckbox.checked = false;
 }
 window.viewTaskDetail = async function(id) {
   const detailDiv = document.getElementById('task-detail-view');
@@ -100,7 +130,14 @@ async function fetchTasks() {
   filteredTasks.forEach((task) => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><input type="checkbox" class="bulk-checkbox" data-task-id="${task.id}" /></td>
+      <td>
+        <div style="display: flex; justify-content: center; align-items: center; height: 22px;">
+          <label class="custom-checkbox" style="margin-bottom: 0;">
+            <input type="checkbox" class="bulk-checkbox" data-task-id="${task.id}" />
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </td>
       <td>
         <span style="text-decoration: ${task.completed ? 'line-through' : 'none'}; color:#2563eb; cursor:pointer;" id="task-title-${task.id}" onclick="toggleRowDetail(${task.id})">${task.title}</span>
         <span id="edit-input-${task.id}" style="display:none;"></span>
@@ -128,6 +165,34 @@ async function fetchTasks() {
     detailTr.innerHTML = `<td colspan="4" data-test=detail-row style="background:rgba(245,250,255,0.7); padding:18px 32px; border-radius:0 0 14px 14px; color:#2563eb; font-size:1.08em;">${task.details ? `<strong>Details:</strong> ${task.details}` : '<em>No details provided.</em>'}</td>`;
     taskList.appendChild(detailTr);
   });
+  // Uncheck all checkboxes after any fetch/render
+  const allCheckboxes = document.querySelectorAll('.bulk-checkbox');
+  allCheckboxes.forEach(cb => cb.checked = false);
+  const selectAllCheckboxUncheck = document.getElementById('select-all-checkbox');
+  if (selectAllCheckboxUncheck) selectAllCheckboxUncheck.checked = false;
+  // Enable/disable bulk buttons based on checkbox selection
+  function updateBulkButtons() {
+    const checked = document.querySelectorAll('.bulk-checkbox:checked').length;
+    const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+    const bulkCompleteBtn = document.getElementById('bulk-complete-btn');
+    const bulkIncompleteBtn = document.getElementById('bulk-incomplete-btn');
+    const enable = checked > 0;
+    if (bulkDeleteBtn) bulkDeleteBtn.disabled = !enable;
+    if (bulkCompleteBtn) bulkCompleteBtn.disabled = !enable;
+    if (bulkIncompleteBtn) bulkIncompleteBtn.disabled = !enable;
+  }
+  // Listen for checkbox changes
+  const checkboxes = document.querySelectorAll('.bulk-checkbox');
+  checkboxes.forEach(cb => {
+    cb.addEventListener('change', updateBulkButtons);
+  });
+  // Use existing selectAll variable if already declared
+  let selectAllCheckbox = document.getElementById('select-all-checkbox');
+  if (selectAllCheckbox) {
+    selectAllCheckbox.addEventListener('change', updateBulkButtons);
+  }
+  // Initial state
+  updateBulkButtons();
 // Toggle details row for a task
 window.toggleRowDetail = function(id) {
   const detailRow = document.getElementById(`detail-row-${id}`);

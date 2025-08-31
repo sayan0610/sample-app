@@ -1,3 +1,100 @@
+/* Modern Task Table Styles */
+#task-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: rgba(255,255,255,0.92);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(99,102,241,0.10);
+  overflow: hidden;
+}
+#task-table th, #task-table td {
+  padding: 16px 14px;
+  border-bottom: 1.5px solid #e5e7eb;
+  font-size: 1.08em;
+}
+#task-table th {
+  background: linear-gradient(90deg, #6366f1 0%, #2563eb 100%);
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border-bottom: 2px solid #6366f1;
+}
+#task-table tr:last-child td {
+  border-bottom: none;
+}
+#task-table tbody tr {
+  transition: background 0.18s;
+}
+#task-table tbody tr:hover {
+  background: rgba(99,102,241,0.07);
+}
+#task-table td {
+  vertical-align: middle;
+}
+.status-badge {
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 0.98em;
+  font-weight: 600;
+  background: #e0e7ff;
+  color: #2563eb;
+  box-shadow: 0 1px 4px rgba(99,102,241,0.07);
+}
+.status-completed {
+  background: linear-gradient(90deg, #38ef7d 0%, #2563eb 100%);
+  color: #fff;
+}
+.status-inprogress {
+  background: linear-gradient(90deg, #fbbf24 0%, #f59e42 100%);
+  color: #fff;
+}
+/* Custom Checkbox Styles */
+.custom-checkbox {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  margin: 0 4px;
+}
+.custom-checkbox input[type="checkbox"] {
+  opacity: 0;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  cursor: pointer;
+}
+.custom-checkbox .checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 22px;
+  width: 22px;
+  background: #f3f4f6;
+  border: 2px solid #2563eb;
+  border-radius: 6px;
+  transition: background 0.2s, border 0.2s;
+}
+.custom-checkbox input[type="checkbox"]:checked ~ .checkmark {
+  background: linear-gradient(90deg, #6366f1 0%, #2563eb 100%);
+  border-color: #6366f1;
+}
+.custom-checkbox .checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+.custom-checkbox input[type="checkbox"]:checked ~ .checkmark:after {
+  display: block;
+}
+.custom-checkbox .checkmark:after {
+  left: 6px;
+  top: 2px;
+  width: 7px;
+  height: 13px;
+  border: solid #fff;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
+}
   .some-class {
     padding-left: 0;
     width: 70px;
