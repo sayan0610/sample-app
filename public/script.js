@@ -125,7 +125,7 @@ async function fetchTasks() {
     const detailTr = document.createElement('tr');
     detailTr.id = `detail-row-${task.id}`;
     detailTr.style.display = 'none';
-    detailTr.innerHTML = `<td colspan="4" style="background:rgba(245,250,255,0.7); padding:18px 32px; border-radius:0 0 14px 14px; color:#2563eb; font-size:1.08em;">${task.details ? `<strong>Details:</strong> ${task.details}` : '<em>No details provided.</em>'}</td>`;
+    detailTr.innerHTML = `<td colspan="4" data-test=detail-row-${task.title} style="background:rgba(245,250,255,0.7); padding:18px 32px; border-radius:0 0 14px 14px; color:#2563eb; font-size:1.08em;">${task.details ? `<strong>Details:</strong> ${task.details}` : '<em>No details provided.</em>'}</td>`;
     taskList.appendChild(detailTr);
   });
 // Toggle details row for a task
