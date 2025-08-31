@@ -1,3 +1,61 @@
+/* Responsive styles for mobile */
+@media (max-width: 600px) {
+  .container {
+    padding: 8px;
+  }
+  #task-table th, #task-table td {
+    padding: 8px 4px;
+    font-size: 0.95em;
+  }
+  #task-table {
+    font-size: 0.95em;
+    border-radius: 8px;
+  }
+  .status-badge {
+    padding: 4px 8px;
+    font-size: 0.92em;
+  }
+  .custom-checkbox {
+    width: 18px;
+    height: 18px;
+  }
+  .custom-checkbox .checkmark {
+    height: 18px;
+    width: 18px;
+  }
+  .custom-checkbox .checkmark:after {
+    left: 4px;
+    top: 1px;
+    width: 6px;
+    height: 10px;
+    border-width: 0 2px 2px 0;
+  }
+  form#task-form input,
+  form#task-form textarea {
+    width: 100% !important;
+    min-width: 0 !important;
+    font-size: 1em;
+  }
+  form#task-form button {
+    width: 100%;
+    min-width: 0;
+    margin-top: 8px;
+  }
+  .task-actions button {
+    font-size: 0.95em;
+    padding: 4px 8px;
+  }
+  .task-actions {
+    gap: 6px;
+  }
+  .task-actions span {
+    font-size: 1em !important;
+  }
+  .status-completed, .status-inprogress {
+    font-size: 0.92em;
+    padding: 4px 8px;
+  }
+}
 /* Modern Task Table Styles */
 #task-table {
   width: 100%;

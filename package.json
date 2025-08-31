@@ -4,7 +4,8 @@
     "description": "Sample API-connected website for testing",
     "main": "server.js",
     "scripts": {
-      "start": "node server.js"
+      "start": "node server.js",
+      "build": "cp -R public www"
     },
     "dependencies": {
       "cors": "^2.8.5",
