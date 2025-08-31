@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+  <h1 style="margin-bottom: 24px; text-align: center;">Task Manager</h1>
+    <form id="task-form" style="margin-bottom: 24px;">
+      <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 10px;">
+  <input type="text" id="task-input" placeholder="Enter a new task" required style="width: 18%; min-width: 80px;" />
+  <textarea id="task-detail-input" placeholder="Enter task details (optional)" style="width: 32%; min-width: 120px; height: 80px; resize: vertical; border-radius: 10px; padding: 12px; font-size: 1.08em; background: rgba(255,255,255,0.85); border: 1.5px solid #90cdf4; margin-bottom: 8px;"></textarea>
+        <button type="submit" style="width: 120px;">Add Task</button>
+      </div>
+    </form>
+    <div style="margin-bottom: 24px; display: flex; flex-direction: row; justify-content: flex-end; align-items: center; width: 100%;">
+      <label for="filter-dropdown" style="font-weight: 600; margin-bottom: 0; margin-right: 10px;">Filter Tasks:</label>
+      <select id="filter-dropdown" style="width: 220px; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;">
+        <option value="all">All</option>
+        <option value="completed">Completed</option>
+        <option value="incomplete">Incomplete</option>
+      </select>
+    </div>
+    </form>
+  <!-- Bulk Actions menu removed -->
+    <hr style="margin: 24px 0;" />
+    <table id="task-table" style="width:100%; margin-bottom:24px; border-radius:12px; overflow:hidden; background:rgba(255,255,255,0.6); box-shadow:0 2px 12px rgba(99,102,241,0.07);">
+      <thead>
+        <tr style="background:#f3f4f6;">
+          <th style="padding:12px 8px;"><input type="checkbox" id="select-all-checkbox" /></th>
+          <th style="padding:12px 8px;">Name</th>
+          <th style="padding:12px 8px;">Status</th>
+          <th style="padding:12px 8px; text-align:center;">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="task-list"></tbody>
+  </table>
+  <div id="task-detail-view"></div>
+  <script src="script.js"></script>
+  <script>
+    document.getElementById('filter-dropdown').addEventListener('change', function() {
+      filterTasks(this.value);
+    });
+  </script>
+</body>
+</html>
