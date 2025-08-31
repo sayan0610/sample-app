@@ -165,31 +165,28 @@ async function fetchTasks() {
     detailTr.innerHTML = `<td colspan="4" data-test=detail-row style="background:rgba(245,250,255,0.7); padding:18px 32px; border-radius:0 0 14px 14px; color:#2563eb; font-size:1.08em;">${task.details ? `<strong>Details:</strong> ${task.details}` : '<em>No details provided.</em>'}</td>`;
     taskList.appendChild(detailTr);
   });
-  // Uncheck all checkboxes after any fetch/render
-  const allCheckboxes = document.querySelectorAll('.bulk-checkbox');
-  allCheckboxes.forEach(cb => cb.checked = false);
-  const selectAllCheckboxUncheck = document.getElementById('select-all-checkbox');
-  if (selectAllCheckboxUncheck) selectAllCheckboxUncheck.checked = false;
   // Enable/disable bulk buttons based on checkbox selection
   function updateBulkButtons() {
     const checked = document.querySelectorAll('.bulk-checkbox:checked').length;
     const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
     const bulkCompleteBtn = document.getElementById('bulk-complete-btn');
     const bulkIncompleteBtn = document.getElementById('bulk-incomplete-btn');
-    const enable = checked > 0;
+  const enable = checked > 1;
     if (bulkDeleteBtn) bulkDeleteBtn.disabled = !enable;
     if (bulkCompleteBtn) bulkCompleteBtn.disabled = !enable;
     if (bulkIncompleteBtn) bulkIncompleteBtn.disabled = !enable;
   }
-  // Listen for checkbox changes
+  // Listen for checkbox changes and clicks (covers all user interactions)
   const checkboxes = document.querySelectorAll('.bulk-checkbox');
   checkboxes.forEach(cb => {
-    cb.addEventListener('change', updateBulkButtons);
+    cb.onchange = updateBulkButtons;
+    cb.onclick = updateBulkButtons;
   });
-  // Use existing selectAll variable if already declared
-  let selectAllCheckbox = document.getElementById('select-all-checkbox');
+  // Select-all checkbox
+  const selectAllCheckbox = document.getElementById('select-all-checkbox');
   if (selectAllCheckbox) {
-    selectAllCheckbox.addEventListener('change', updateBulkButtons);
+    selectAllCheckbox.onchange = updateBulkButtons;
+    selectAllCheckbox.onclick = updateBulkButtons;
   }
   // Initial state
   updateBulkButtons();
