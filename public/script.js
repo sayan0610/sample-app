@@ -114,7 +114,7 @@ async function fetchTasks() {
           <button class="icon-btn delete-btn" title="Delete" aria-label="Delete" data-test-id="delete-task" onclick="deleteTask(${task.id})">
             <span style="color:#ef4444;">&#128465;</span>
           </button>
-          <button class="icon-btn" title="Rename" onclick="showEditInput(${task.id}, '${task.title.replace(/'/g, "\'")}')">
+          <button class="icon-btn" title="Rename" data-test-id="edit-task" onclick="showEditInput(${task.id}, '${task.title.replace(/'/g, "\'")}')">
             <span style="color:#2563eb;">&#9998;</span>
           </button>
         </div>
