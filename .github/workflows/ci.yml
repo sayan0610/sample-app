@@ -1,0 +1,91 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      publish_dir: ${{ steps.set-publish-dir.outputs.publish_dir }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect Node project
+        id: detect
+        run: |
+          if [ -f package.json ]; then
+            echo "node_project=true" >> $GITHUB_OUTPUT
+          else
+            echo "node_project=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Node (only if Node project)
+        if: steps.detect.outputs.node_project == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies (if package.json)
+        if: steps.detect.outputs.node_project == 'true'
+        run: npm ci
+
+      - name: Run build if build script exists
+        id: build
+        if: steps.detect.outputs.node_project == 'true'
+        run: |
+          if npm run | grep -q "^  build"; then
+            echo "Running build script..."
+            npm run build
+          else
+            echo "No build script. Creating dist/ from public/."
+            mkdir -p dist
+            cp -R public/* dist/
+          fi
+
+      - name: Fallback for pure static site (no package.json)
+        if: steps.detect.outputs.node_project == 'false'
+        run: |
+            mkdir -p dist
+            cp -R public/* dist/
+
+      - name: Set publish dir
+        id: set-publish-dir
+        run: |
+          if [ -d "dist" ]; then
+            echo "publish_dir=dist" >> $GITHUB_OUTPUT
+          elif [ -d "public" ]; then
+            echo "publish_dir=public" >> $GITHUB_OUTPUT
+          else
+            echo "ERROR: No dist/ or public/ directory to publish."
+            exit 1
+          fi
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ steps.set-publish-dir.outputs.publish_dir }}
+
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
