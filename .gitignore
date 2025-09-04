@@ -1,21 +1,134 @@
-# Node.js dependencies
+# Node dependencies
 node_modules/
+client/node_modules/
+server/node_modules/
 
-# Logs
-logs/
-*.log
+# Build / output
+dist/
+build/
+client/dist/
+*.tsbuildinfo
+
+# Logs & debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+*.log
 
-# OS files
-.DS_Store
+# Runtime data / pids
+pids/
+*.pid
+*.seed
+*.pid.lock
 
 # Environment files
 .env
+.env.*
+!.env.example
+client/.env
+client/.env.*
+!client/.env.example
+# Keep the one we created locally but don’t commit it
+client/.env.local
 
-# Optional build output
-/dist
+# Coverage / reports
+coverage/
+.nyc_output/
+reports/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Caches
+.cache/
+client/.vite/
+vite.config.ts.timestamp*
+.eslintcache
+
+# Optional: DB dumps (uncomment if you create dumps you don’t want tracked)
+# *.sql
+# dump*.sql
+
+# Lockfiles (keep if you want reproducible builds; comment out the ones you track)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
 
 # Misc
+*.tgz
+*.orig
+```// filepath: /Users/jiniapiku/Sayan Code/sample-app/.gitignore
+
+# Node dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Build / output
+dist/
+build/
+client/dist/
+*.tsbuildinfo
+
+# Logs & debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Runtime data / pids
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Environment files
+.env
+.env.*
+!.env.example
+client/.env
+client/.env.*
+!client/.env.example
+# Keep the one we created locally but don’t commit it
+client/.env.local
+
+# Coverage / reports
+coverage/
+.nyc_output/
+reports/
+
+# IDE / Editor
+.vscode/
+.idea/
 *.swp
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Caches
+.cache/
+client/.vite/
+vite.config.ts.timestamp*
+.eslintcache
+
+# Optional: DB dumps (uncomment if you create dumps you don’t want tracked)
+# *.sql
+# dump*.sql
+
+# Lockfiles (keep if you want reproducible builds; comment out the ones you track)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Misc
+*.tgz
+*.orig
