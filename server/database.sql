@@ -9,5 +9,8 @@ CREATE TABLE tasks (
   description TEXT,
   status task_status DEFAULT 'pending',
   created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  completion_reason TEXT,
+  completion_signature TEXT,
+  completed_at TIMESTAMPTZ
 );

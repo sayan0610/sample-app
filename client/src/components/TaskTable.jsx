@@ -7,7 +7,9 @@ export default function TaskTable({
   onSelectOne,
   onToggleTask,
   onDeleteTask,
-  onRenameTask
+  onRenameTask,
+  onEdit,
+  onRequestComplete
 }) {
   const allChecked = tasks.length > 0 && tasks.every(t => selectedIds.has(t.id));
   return (
@@ -27,7 +29,7 @@ export default function TaskTable({
             </th>
             <th>Title</th>
             <th>Status</th>
-            <th style={{ width: 140 }}>Actions</th>
+            <th style={{ width: 160 }}>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -40,6 +42,8 @@ export default function TaskTable({
               onToggle={onToggleTask}
               onDelete={onDeleteTask}
               onRename={onRenameTask}
+              onEdit={onEdit}
+              onRequestComplete={onRequestComplete}
             />
           ))}
           {tasks.length === 0 && (

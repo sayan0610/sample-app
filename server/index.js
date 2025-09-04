@@ -17,8 +17,11 @@ function mapRow(r) {
   return {
     id: r.id,
     title: r.title,
-    details: r.description || '',
-    completed: r.status === 'completed'
+    details: r.description,
+    completed: r.status === 'completed',
+    completionReason: r.completion_reason,
+    completionSignature: r.completion_signature,
+    completedAt: r.completed_at
   };
 }
 
@@ -92,6 +95,11 @@ app.put('/api/tasks/:id', async (req, res) => {
   const { title, details, completed } = req.body;
   if (!title || !title.trim()) return res.status(400).json({ error: 'Title required' });
   const status = completed ? 'completed' : 'pending';
+  const existing = await db.query('SELECT status FROM tasks WHERE id=$1', [id]);
+  if (existing.rowCount === 0) return res.status(404).json({ error: 'Not found' });
+  if (existing.rows[0].status === 'completed' && completed === false) {
+    return res.status(400).json({ error: 'Completed tasks cannot be reverted to pending' });
+  }
   try {
     const { rows } = await db.query(
       `UPDATE tasks
@@ -108,25 +116,92 @@ app.put('/api/tasks/:id', async (req, res) => {
 });
 
 app.patch('/api/tasks/:id', async (req, res) => {
-  const { title, details, completed } = req.body;
+  const { id } = req.params;
+  const { title, details, completed, completionReason, completionSignature } = req.body;
+
   try {
-    const existing = await db.query('SELECT * FROM tasks WHERE id=$1', [req.params.id]);
-    if (!existing.rows.length) return res.status(404).json({ error: 'Not found' });
-    const cur = existing.rows[0];
-    const newTitle = title !== undefined ? title : cur.title;
-    if (!newTitle || !newTitle.trim()) return res.status(400).json({ error: 'Title required' });
-    const newDesc = details !== undefined ? details : cur.description;
-    const newStatus = completed !== undefined ? (completed ? 'completed' : 'pending') : cur.status;
-    const { rows } = await db.query(
-      `UPDATE tasks
-       SET title=$1, description=$2, status=$3, updated_at=NOW()
-       WHERE id=$4 RETURNING *`,
-      [newTitle.trim(), (newDesc || '').trim(), newStatus, req.params.id]
-    );
-    res.json(mapRow(rows[0]));
+    // Fetch current row to determine transition
+    const current = await db.query('SELECT * FROM tasks WHERE id=$1', [id]);
+    const currentRow = current.rows[0];
+    const wasCompleted = currentRow.status === 'completed';
+
+    if (wasCompleted && patchHasCompletedFalse(req.body)) {
+      return res.status(400).json({ error: 'Completed tasks cannot be reverted to pending' });
+    }
+
+    function patchHasCompletedFalse(body) {
+      return Object.prototype.hasOwnProperty.call(body, 'completed') && body.completed === false;
+    }
+    // Build dynamic set clause
+    const fields = [];
+    const values = [];
+    let idx = 1;
+
+    if (title !== undefined) {
+      fields.push(`title = $${idx++}`);
+      values.push(title);
+    }
+    if (details !== undefined) {
+      fields.push(`description = $${idx++}`);
+      values.push(details);
+    }
+    if (completed !== undefined) {
+      fields.push(`status = $${idx++}`);
+      values.push(completed ? 'completed' : 'pending');
+      if (completed) {
+        // If marking complete NOW (and wasn't before), set audit
+        if (!wasCompleted) {
+          fields.push(`completed_at = now()`);
+          if (completionReason !== undefined) {
+            fields.push(`completion_reason = $${idx++}`);
+            values.push(completionReason);
+          }
+          if (completionSignature !== undefined) {
+            fields.push(`completion_signature = $${idx++}`);
+            values.push(completionSignature);
+          }
+        } else {
+          // Already completed: allow updating reason/signature if sent
+          if (completionReason !== undefined) {
+            fields.push(`completion_reason = $${idx++}`);
+            values.push(completionReason);
+          }
+          if (completionSignature !== undefined) {
+            fields.push(`completion_signature = $${idx++}`);
+            values.push(completionSignature);
+          }
+        }
+      } else {
+        // Reverting to pending: clear audit
+        fields.push('completion_reason = NULL');
+        fields.push('completion_signature = NULL');
+        fields.push('completed_at = NULL');
+      }
+    } else {
+      // If not toggling status but user wants to update reason/signature only while completed
+      if (wasCompleted) {
+        if (completionReason !== undefined) {
+          fields.push(`completion_reason = $${idx++}`);
+          values.push(completionReason);
+        }
+        if (completionSignature !== undefined) {
+          fields.push(`completion_signature = $${idx++}`);
+          values.push(completionSignature);
+        }
+      }
+    }
+
+    if (fields.length === 0) {
+      return res.json(mapRow(current.rows[0]));
+    }
+
+    values.push(id);
+    const sql = `UPDATE tasks SET ${fields.join(', ')}, updated_at = now() WHERE id = $${idx} RETURNING *`;
+    const updated = await db.query(sql, values);
+    res.json(mapRow(updated.rows[0]));
   } catch (e) {
-    console.error('PATCH /api/tasks/:id error', e);
-    res.status(500).json({ error: 'DB error', details: e.message });
+    console.error(e);
+    res.status(500).json({ error: 'Update failed' });
   }
 });
 
@@ -141,20 +216,57 @@ app.delete('/api/tasks/:id', async (req, res) => {
   }
 });
 
-app.put('/api/tasks/bulk/status', async (req, res) => {
-  const { ids, completed } = req.body;
-  if (!Array.isArray(ids) || typeof completed !== 'boolean')
-    return res.status(400).json({ error: 'ids[] and completed required' });
+app.put('/api/tasks/:id', async (req, res) => {
+  const { id } = req.params;
+  const {
+    title,
+    details,
+    completed,
+    completionReason,
+    completionSignature
+  } = req.body;
+
+  if (title == null || completed == null) {
+    return res.status(400).json({ error: 'title and completed required' });
+  }
+
   try {
-    const status = completed ? 'completed' : 'pending';
-    const result = await db.query(
-      `UPDATE tasks SET status=$2, updated_at=NOW() WHERE id = ANY($1::int[])`,
-      [ids, status]
-    );
-    res.json({ updated: result.rowCount });
+    let status = completed ? 'completed' : 'pending';
+    let completionCols = '';
+    const values = [title, details || null, status];
+    let idx = 4;
+
+    if (completed) {
+      completionCols = `,
+        completion_reason = $${idx++},
+        completion_signature = $${idx++},
+        completed_at = COALESCE(completed_at, now())`;
+      values.push(completionReason || null, completionSignature || null);
+    } else {
+      completionCols = `,
+        completion_reason = NULL,
+        completion_signature = NULL,
+        completed_at = NULL`;
+    }
+
+    values.push(id);
+
+    const sql = `
+      UPDATE tasks
+      SET title = $1,
+          description = $2,
+          status = $3
+          ${completionCols},
+          updated_at = now()
+      WHERE id = $${idx}
+      RETURNING *`;
+
+    const r = await db.query(sql, values);
+    if (r.rowCount === 0) return res.status(404).json({ error: 'Not found' });
+    res.json(mapRow(r.rows[0]));
   } catch (e) {
-    console.error('PUT /api/tasks/bulk/status error', e);
-    res.status(500).json({ error: 'DB error', details: e.message });
+    console.error(e);
+    res.status(500).json({ error: 'Update failed' });
   }
 });
 

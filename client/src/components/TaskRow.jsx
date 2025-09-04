@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 export default function TaskRow({
   task,
@@ -6,15 +6,16 @@ export default function TaskRow({
   onSelectChange,
   onToggle,
   onDelete,
-  onRename
+  onRename,
+  onEdit,
+  onRequestComplete
 }) {
   const [expanded, setExpanded] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(task.title);
 
-  function save() {
-    if (draft.trim() && draft !== task.title) onRename(task.id, draft.trim());
-    setEditing(false);
+  function handleCompleteClick() {
+    if (!task.completed) {
+      onRequestComplete && onRequestComplete(task);
+    }
   }
 
   return (
@@ -31,30 +32,13 @@ export default function TaskRow({
           </label>
         </td>
         <td>
-          {!editing && (
-            <span
-              className="task-title"
-              style={{ textDecoration: task.completed ? 'line-through' : 'none' }}
-              onClick={() => setExpanded(v => !v)}
-            >
-              {task.title}
-            </span>
-          )}
-          {editing && (
-            <span className="edit-inline">
-              <input
-                value={draft}
-                onChange={e => setDraft(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') save();
-                  if (e.key === 'Escape') { setEditing(false); setDraft(task.title); }
-                }}
-                autoFocus
-              />
-              <button onClick={save}>Save</button>
-              <button onClick={() => { setEditing(false); setDraft(task.title); }}>Cancel</button>
-            </span>
-          )}
+          <span
+            className="task-title"
+            style={{ textDecoration: task.completed ? 'line-through' : 'none' }}
+            onClick={() => setExpanded(v => !v)}
+          >
+            {task.title}
+          </span>
         </td>
         <td>
           <span className={`status-badge ${task.completed ? 'status-completed' : 'status-inprogress'}`}>
@@ -63,17 +47,18 @@ export default function TaskRow({
         </td>
         <td className="actions">
           <button
-            title={task.completed ? 'Undo' : 'Complete'}
-            aria-label={task.completed ? 'Mark as In-Progress' : 'Mark Complete'}
-            className={task.completed ? 'pending-btn' : 'complete-btn'}
-            onClick={() => onToggle(task)}
+            title={task.completed ? 'Completed' : 'Mark Complete'}
+            aria-label={task.completed ? 'Completed' : 'Mark Complete'}
+            className={`action-btn complete-btn ${task.completed ? 'hidden-complete' : ''}`}
+            disabled={task.completed}
+            onClick={handleCompleteClick}
           >
-            {task.completed ? '↺' : '✔'}
+            ✔
           </button>
           <button
             title="Delete"
             aria-label="Delete task"
-            className="delete-btn"
+            className="delete-btn action-btn"
             onClick={() => onDelete(task.id)}
           >
             <svg
@@ -91,10 +76,10 @@ export default function TaskRow({
             </svg>
           </button>
           <button
-            title="Rename"
-            aria-label="Rename task"
-            className="edit-btn"
-            onClick={() => setEditing(true)}
+            title="Edit"
+            aria-label="Edit task"
+            className="edit-btn action-btn"
+            onClick={() => onEdit(task)}
           >
             ✎
           </button>
@@ -104,6 +89,14 @@ export default function TaskRow({
         <tr className="detail-row">
           <td colSpan="4">
             {task.details ? <><strong>Details:</strong> {task.details}</> : <em>No details.</em>}
+            {task.completed && (task.completionReason || task.completionSignature) && (
+              <div className="completion-audit">
+                <strong>Completion Audit:</strong><br/>
+                {task.completedAt && <>At: {new Date(task.completedAt).toLocaleString()}<br/></>}
+                {task.completionReason && <>Reason: {task.completionReason}<br/></>}
+                {task.completionSignature && <>Signature: {task.completionSignature}</>}
+              </div>
+            )}
           </td>
         </tr>
       )}

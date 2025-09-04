@@ -24,16 +24,23 @@ export function useTasks() {
     }
   }, [filter]);
 
-  useEffect(() => { fetchTasks(); }, [fetchTasks]);
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
 
-  async function addTask(title, details) {
-    const r = await fetch(API_URL, {
+  async function addTask(input) {
+    const payload = typeof input === 'string'
+      ? { title: input }
+      : { title: input.title, details: input.details ?? null };
+
+    const res = await fetch('/api/tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, details })
+      body: JSON.stringify(payload)
     });
-    if (!r.ok) throw new Error('Create failed');
-    fetchTasks();
+    if (!res.ok) throw new Error('Create failed');
+    const data = await res.json();
+    setTasks(t => [data, ...t]);
   }
 
   async function updateTask(id, patch) {
@@ -81,7 +88,17 @@ export function useTasks() {
   }
 
   return {
-    tasks, filter, setFilter, loading, error,
-    addTask, updateTask, replaceTask, deleteTask, bulkStatus, bulkDelete, refetch: fetchTasks
+    tasks,
+    filter,
+    setFilter,
+    loading,
+    error,
+    addTask,
+    updateTask,
+    replaceTask,
+    deleteTask,
+    bulkStatus,
+    bulkDelete,
+    refetch: fetchTasks
   };
 }
