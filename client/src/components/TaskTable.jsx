@@ -44,7 +44,36 @@ export default function TaskTable({
               onRename={onRenameTask}
               onEdit={onEdit}
               onRequestComplete={onRequestComplete}
-            />
+            >
+              <button
+                type="button"
+                className="action-btn edit"
+                onClick={() => onEdit && onEdit(t)}
+                title="Edit"
+              >
+                Edit
+              </button>
+              {!t.completed ? (
+                <button
+                  type="button"
+                  className="action-btn complete"
+                  onClick={() => onRequestComplete && onRequestComplete(t)}
+                  title="Mark complete"
+                >
+                  Complete
+                </button>
+              ) : (
+                <span className="action-btn hidden-complete" aria-hidden="true" />
+              )}
+              <button
+                type="button"
+                className="action-btn delete"
+                onClick={() => onDeleteTask && onDeleteTask(t.id)}
+                title="Delete"
+              >
+                Delete
+              </button>
+            </TaskRow>
           ))}
           {tasks.length === 0 && (
             <tr>

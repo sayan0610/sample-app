@@ -1,0 +1,15 @@
+.m-form input,
+.m-form textarea {
+  width:100%; padding:11px 13px 10px;
+  border:1px solid var(--c-border); background:#f8f9fa;
+  border-radius:10px; font-size:14px;
+  transition:border-color var(--tr-fast), background var(--tr-fast), box-shadow var(--tr-fast);
+}
+.m-form input:focus,
+.m-form textarea:focus {
+  border-color:var(--c-primary); background:#fff; box-shadow:var(--focus-ring);
+  outline:none;
+}
+.m-inline input[type=checkbox] { appearance:none; width:19px; height:19px; border:1px solid var(--c-border); border-radius:5px; }
+.m-inline input[type=checkbox]:checked { background:var(--c-primary); border-color:var(--c-primary); }
+.m-error { background:#ffe6e8; border:1px solid #fecdd3; color:#9f1239; padding:10px 12px; border-radius:10px; font-size:13px; }

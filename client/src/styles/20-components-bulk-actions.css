@@ -1,0 +1,61 @@
+/* ===== Bulk Actions ===== */
+.bulk-actions {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; margin: 10px 0 12px;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
+  border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+
+/* Selected count pill */
+.bulk-actions .ba-count {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 10px; border-radius: 999px; font-weight: 700;
+  color: var(--c-text); background: var(--c-surface-alt);
+  border: 1px solid var(--c-border-soft);
+}
+.bulk-actions .ba-count::before {
+  content: ''; width: 8px; height: 8px; border-radius: 999px;
+  background: var(--c-primary); box-shadow: 0 0 0 3px rgba(37,99,235,.18);
+}
+
+/* Spacer pushes buttons to the right */
+.bulk-actions .ba-spacer { flex: 1 1 auto; }
+
+/* Buttons */
+.bulk-actions .ba-btn {
+  height: 36px; padding: 0 14px; border-radius: 10px;
+  border: 1px solid var(--c-border); background: #eef2f7; color: #243343;
+  font-weight: 600; letter-spacing: .2px; cursor: pointer;
+  transition: background var(--tr-fast), transform var(--tr-fast), box-shadow var(--tr-fast), border-color var(--tr-fast);
+}
+.bulk-actions .ba-btn:hover { background: #e2e8f0; border-color: #cbd5e1; }
+.bulk-actions .ba-btn:active { transform: translateY(1px); }
+
+/* Primary (Complete) */
+.bulk-actions .ba-btn.primary {
+  border-color: var(--c-success);
+  background: linear-gradient(135deg, var(--c-success-accent), var(--c-success) 58%);
+  color: #053b27;
+  box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 4px 14px -6px rgba(16,185,129,.45);
+}
+
+/* Danger (Delete) */
+.bulk-actions .ba-btn.danger {
+  border-color: #ef4444;
+  background: linear-gradient(135deg, #fca5a5, #ef4444 58%);
+  color: #3b0b0b;
+  box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 4px 14px -6px rgba(239,68,68,.45);
+}
+
+/* Disabled */
+.bulk-actions .ba-btn:disabled {
+  opacity: .55; cursor: not-allowed; filter: grayscale(.25);
+  transform: none; box-shadow: none;
+}
+
+@media (max-width: 740px) {
+  .bulk-actions { flex-wrap: wrap; gap: 10px; }
+  .bulk-actions .ba-spacer { display: none; }
+  .bulk-actions .ba-btn { flex: 1 1 calc(50% - 5px); justify-content: center; }
+}

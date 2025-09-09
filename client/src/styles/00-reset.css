@@ -1,0 +1,9 @@
+@layer reset {
+  *,*::before,*::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body,h1,h2,h3,h4,h5,h6,p,figure,blockquote { margin:0; }
+  ul[role='list'],ol[role='list'] { list-style:none; padding:0; margin:0; }
+  body { line-height:1.4; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; }
+  img,svg,video { display:block; max-width:100%; }
+  button { font:inherit; }
+}

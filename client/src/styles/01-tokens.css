@@ -1,0 +1,36 @@
+@layer tokens {
+  :root {
+    /* Brand */
+    --brand-accent-from:#0ea5e9;
+    --brand-accent-to:#0369a1;
+
+    /* Color scale */
+    --c-bg:#ffffff;
+    --c-surface:#ffffff;
+    --c-surface-alt:#f1f5f9;
+    --c-border:#d0d7de;
+    --c-border-soft:#e2e8f0;
+    --c-text:#0f172a;
+    --c-text-dim:#475569;
+    --c-primary:#2563eb;
+    --c-primary-hover:#1d4ed8;
+    --c-success:#10b981;
+    --c-success-accent:#34d399;
+    --c-danger:#dc2626;
+
+    /* Shadows & radii */
+    --sh-panel:0 6px 28px -6px rgba(15,23,42,.25),0 2px 8px rgba(15,23,42,.08);
+    --radius-xs:4px; --radius-sm:8px; --radius:12px; --radius-lg:16px;
+
+    /* Typography scale */
+    --fs-xs:11px; --fs-sm:12px; --fs-base:14px; --fs-lg:17px;
+    --fw-medium:500; --fw-semibold:600; --fw-bold:700;
+
+    /* Spacing */
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px;
+
+    /* Transitions */
+    --tr-fast:.16s;
+    --focus-ring:0 0 0 3px rgba(37,99,235,.35);
+  }
+}

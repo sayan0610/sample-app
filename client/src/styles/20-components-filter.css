@@ -1,0 +1,72 @@
+/* ===== Filter Bar ===== */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.65);
+  border: 1px solid rgba(255,255,255,.8);
+  box-shadow: 0 1px 2px rgba(0,0,0,.06), inset 0 0 0 1px rgba(0,0,0,.04);
+  backdrop-filter: saturate(140%) blur(6px);
+}
+
+.filter-bar input[type="text"] {
+  height: 38px;
+  min-width: 220px;
+  flex: 1 1 240px;
+  padding: 9px 12px 9px 36px;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 10px;
+  background-color: rgba(255,255,255,.92);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23788599' viewBox='0 0 24 24'><path d='M21 20.3 17.6 16.9a8.5 8.5 0 1 0-.7.7L20.3 21 21 20.3zM10.5 17a6.5 6.5 0 1 1 0-13 6.5 6.5 0 0 1 0 13z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: 10px 50%;
+  background-size: 16px 16px;
+  color: var(--c-text);
+  transition: border-color var(--tr-fast), box-shadow var(--tr-fast), background-color var(--tr-fast);
+}
+.filter-bar input[type="text"]::placeholder { color: #748092; opacity: .9; }
+.filter-bar input[type="text"]:focus {
+  outline: none; border-color: var(--c-primary); box-shadow: var(--focus-ring); background-color: #fff;
+}
+
+.filter-bar select {
+  height: 38px;
+  padding: 8px 28px 8px 12px;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 10px;
+  background: rgba(255,255,255,.92);
+  color: var(--c-text);
+  -webkit-appearance: none; appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #64748b 50%),
+    linear-gradient(135deg, #64748b 50%, transparent 50%),
+    linear-gradient(to right, transparent, transparent);
+  background-position:
+    calc(100% - 16px) 50%,
+    calc(100% - 12px) 50%,
+    calc(100% - 36px) 0;
+  background-size: 6px 6px, 6px 6px, 1px 100%;
+  background-repeat: no-repeat;
+  transition: border-color var(--tr-fast), box-shadow var(--tr-fast), background-color var(--tr-fast);
+}
+.filter-bar select:focus {
+  outline: none; border-color: var(--c-primary); box-shadow: var(--focus-ring); background-color: #fff;
+}
+
+/* Optional clear button */
+.filter-bar .clear-btn {
+  height: 38px; padding: 0 12px; border-radius: 10px;
+  border: 1px solid rgba(0,0,0,.06); background: #eef2f7; color: #243343;
+  font-weight: 600; letter-spacing: .2px; cursor: pointer;
+  transition: background var(--tr-fast), transform var(--tr-fast), box-shadow var(--tr-fast);
+}
+.filter-bar .clear-btn:hover { background: #e2e8f0; }
+.filter-bar .clear-btn:active { transform: translateY(1px); }
+
+@media (max-width: 740px) {
+  .filter-bar { width: 100%; padding: 6px; gap: 8px; }
+  .filter-bar input[type="text"] { flex: 1 1 auto; min-width: 0; }
+  .filter-bar select { flex: 0 0 42%; min-width: 140px; }
+}

@@ -1,10 +1,27 @@
-export default function BulkActions({ count, onDelete, onComplete, onIncomplete }) {
-  const disabled = count <= 1;
+export default function BulkActions({ count, onDelete, onComplete }) {
+  const disabled = count === 0;
   return (
-    <div className="bulk-actions">
-      <button disabled={disabled} onClick={onDelete}>Bulk Delete</button>
-      <button disabled={disabled} onClick={onComplete}>Mark Completed</button>
-      <span className="bulk-count">{count > 0 ? `${count} selected` : ''}</span>
+    <div className="bulk-actions" role="region" aria-label="Bulk actions">
+      <span className="ba-count" aria-live="polite">{count} selected</span>
+      <div className="ba-spacer" />
+      <button
+        type="button"
+        className="ba-btn primary"
+        onClick={onComplete}
+        disabled={disabled}
+        aria-disabled={disabled}
+      >
+        Complete
+      </button>
+      <button
+        type="button"
+        className="ba-btn danger"
+        onClick={onDelete}
+        disabled={disabled}
+        aria-disabled={disabled}
+      >
+        Delete
+      </button>
     </div>
   );
 }

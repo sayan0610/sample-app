@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import './styles.css';
 import { useTasks } from './hooks/useTasks.js';
 import AddTaskModal from './components/AddTaskModal.jsx';
 import FilterBar from './components/FilterBar.jsx';
@@ -7,6 +6,12 @@ import BulkActions from './components/BulkActions.jsx';
 import TaskTable from './components/TaskTable.jsx';
 import TaskEditModal from './components/TaskEditModal.jsx';
 import CompleteTaskModal from './components/CompleteTaskModal.jsx';
+
+console.log('VITE_API_URL =', import.meta.env.VITE_API_URL);
+
+fetch((import.meta.env.VITE_API_URL || '') + '/api/tasks')
+  .then(r => { console.log('content-type', r.headers.get('content-type')); return r.text(); })
+  .then(t => { console.log('raw', t.slice(0,120)); try { console.log(JSON.parse(t)); } catch(e){ console.error('Not JSON', e);} });
 
 export default function App() {
   const {
@@ -18,6 +23,10 @@ export default function App() {
   const [editingTask, setEditingTask] = useState(null);
   const [completingTask, setCompletingTask] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
+
+  useEffect(() => {
+    console.debug('[App] tasks prop', tasks);
+  }, [tasks]);
 
   function handleSelectOne(id, checked) {
     setSelectedIds(p => {
@@ -92,30 +101,26 @@ export default function App() {
       </header>
 
       <main className="app-main">
-        <div className="main-grid">
-          <section className="right-pane">
-            <BulkActions
-              count={selectedIds.size}
-              onDelete={bulkDeleteAction}
-              onComplete={bulkComplete}
-            />
-
-            {loading && <div className="info-banner">Loading...</div>}
-            {error && <div className="error-banner">{error}</div>}
-
-            <TaskTable
-              tasks={tasks}
-              selectedIds={selectedIds}
-              onSelectAll={handleSelectAll}
-              onSelectOne={handleSelectOne}
-              onToggleTask={toggleTask}
-              onDeleteTask={deleteTask}
-              onRenameTask={renameTask}
-              onEdit={handleEdit}
-              onRequestComplete={handleRequestComplete}
-            />
-          </section>
+        <BulkActions
+          count={selectedIds.size}
+          onDelete={bulkDeleteAction}
+          onComplete={bulkComplete}
+        />
+        <div aria-live="polite" className="sr-live">
+          {loading && <div className="info-banner">Loading tasks…</div>}
+          {error && <div className="error-banner">{error}</div>}
         </div>
+        <TaskTable
+          tasks={tasks}
+          selectedIds={selectedIds}
+          onSelectAll={handleSelectAll}
+          onSelectOne={handleSelectOne}
+          onToggleTask={toggleTask}
+          onDeleteTask={deleteTask}
+          onRenameTask={renameTask}
+          onEdit={handleEdit}
+          onRequestComplete={handleRequestComplete}
+        />
       </main>
 
       {editingTask && (

@@ -1,0 +1,435 @@
+/* Modern, dynamic table styles for #task-table */
+
+/* Wrapper: scrollable, elevated card */
+.table-wrapper {
+  --row-py: 10px;
+  --cell-px: 14px;
+  --row-min-h: 44px;
+  --thead-bg: var(--c-surface-alt, #f1f5f9);
+  --thead-text: #334155;
+  --row-zebra: #fafcff;
+  --row-hover: #f0f6ff;
+  --row-selected: #e0ecff;
+  --border: var(--c-border, #d9e1e8);
+  --border-soft: var(--c-border-soft, #e6edf3);
+
+  width: 100%;
+  overflow: auto;
+  background: var(--c-surface, #fff);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 2px 4px -1px rgba(0,0,0,.06);
+}
+
+/* Density presets (set on .table-wrapper) */
+.table-wrapper[data-density="compact"] {
+  --row-py: 6px;
+  --cell-px: 12px;
+  --row-min-h: 38px;
+}
+.table-wrapper[data-density="cozy"] {
+  --row-py: 12px;
+  --cell-px: 16px;
+  --row-min-h: 50px;
+}
+
+/* Sticky header offset if you ever need (used when wrapper sits under fixed app header) */
+/* .table-wrapper[data-sticky="true"] thead th { top: 0; } */
+
+#task-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+/* Head cells */
+#task-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--thead-bg);
+  color: var(--thead-text);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  padding: 11px var(--cell-px) 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Rounded header corners */
+#task-table thead th:first-child { border-top-left-radius: 14px; }
+#task-table thead th:last-child  { border-top-right-radius: 14px; }
+
+/* Sort states (use aria-sort on <th>) */
+#task-table thead th[aria-sort] {
+  position: sticky; /* retain pointer area */
+  cursor: pointer;
+}
+#task-table thead th[aria-sort]::after {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-left: 6px;
+  vertical-align: middle;
+  mask-size: 10px 10px;
+  mask-repeat: no-repeat;
+  background: currentColor;
+  opacity: .55;
+  transform: translateY(-1px);
+}
+#task-table thead th[aria-sort="ascending"]::after {
+  mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23000' d='M8 4l5 6H3z'/%3E%3C/svg%3E");
+}
+#task-table thead th[aria-sort="descending"]::after {
+  mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23000' d='M3 6l5 6 5-6z'/%3E%3C/svg%3E");
+}
+
+/* Body cells */
+#task-table tbody td {
+  padding: var(--row-py) var(--cell-px);
+  border-top: 1px solid var(--border-soft);
+  vertical-align: middle;
+  background: #fff;
+  min-height: var(--row-min-h);
+}
+
+/* Zebra + hover */
+#task-table tbody tr:nth-child(even) td { background: var(--row-zebra); }
+#task-table tbody tr:hover td { background: var(--row-hover); }
+
+/* Selected and completed state rows (apply aria-selected or data-state on <tr>) */
+#task-table tbody tr[aria-selected="true"] td {
+  background: var(--row-selected);
+  box-shadow: inset 0 0 0 1px rgba(59,130,246,.25);
+}
+#task-table tbody tr[data-state="completed"] td {
+  color: #64748b;
+  text-decoration-color: rgba(100,116,139,.35);
+}
+
+/* First/last column alignment */
+#task-table thead th:first-child,
+#task-table tbody td:first-child {
+  width: 48px;
+  padding-left: 12px;
+}
+#task-table thead th:last-child,
+#task-table tbody td:last-child {
+  width: 1%;
+  white-space: nowrap;
+}
+
+/* Checkbox styling (non‑destructive: falls back if you use native) */
+#task-table input[type="checkbox"] {
+  appearance: none;
+  width: 18px; height: 18px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: #fff;
+  display: grid; place-items: center;
+  cursor: pointer;
+  transition: background .18s, border-color .18s, box-shadow .18s;
+}
+#task-table input[type="checkbox"]:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-color: var(--c-primary, #2563eb);
+}
+#task-table input[type="checkbox"]:checked {
+  background: var(--c-primary, #2563eb);
+  border-color: var(--c-primary, #2563eb);
+}
+#task-table input[type="checkbox"]:checked::after {
+  content: '';
+  width: 9px; height: 9px;
+  border: 2px solid #fff;
+  border-left: 0; border-top: 0;
+  transform: rotate(45deg) translateY(-1px);
+}
+
+/* Title truncation (use .task-title inside a cell) */
+#task-table .task-title {
+  display: inline-block;
+  max-width: 56ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+@media (max-width: 900px) { #task-table .task-title { max-width: 40ch; } }
+@media (max-width: 680px) { #task-table .task-title { max-width: 28ch; } }
+
+/* Action buttons cell */
+#task-table .actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+#task-table .actions .action-btn {
+  height: 34px; min-width: 34px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #eef2f7;
+  color: #243343;
+  font-weight: 600;
+  letter-spacing: .2px;
+  cursor: pointer;
+  transition: background var(--tr-fast), transform var(--tr-fast), box-shadow var(--tr-fast), border-color var(--tr-fast);
+}
+#task-table .actions .action-btn:hover {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+#task-table .actions .action-btn:active { transform: translateY(1px); }
+#task-table .actions .hidden-complete { visibility: hidden; }
+
+/* Colored action button variants */
+#task-table .actions .action-btn.edit,
+#task-table .actions .edit-btn.action-btn {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #93c5fd, #3b82f6 58%);
+  color: #0b2357;
+  box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 4px 14px -6px rgba(59,130,246,.4);
+}
+#task-table .actions .action-btn.complete,
+#task-table .actions .complete-btn.action-btn {
+  border-color: #10b981;
+  background: linear-gradient(135deg, #34d399, #10b981 58%);
+  color: #053b27;
+  box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 4px 14px -6px rgba(16,185,129,.45);
+}
+#task-table .actions .action-btn.delete,
+#task-table .actions .delete-btn.action-btn {
+  border-color: #ef4444;
+  background: linear-gradient(135deg, #fca5a5, #ef4444 58%);
+  color: #3b0b0b;
+  box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 4px 14px -6px rgba(239,68,68,.45);
+}
+
+/* Keep neutral style only for non-variants */
+#task-table .actions .action-btn:not(.edit):not(.edit-btn):not(.complete):not(.complete-btn):not(.delete):not(.delete-btn) {
+  border-color: var(--c-border);
+  background: color-mix(in srgb, var(--accent, #10b981) 6%, #eef2f7);
+}
+#task-table .actions .action-btn:focus-visible {
+  outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(15,23,42,.35);
+}
+
+/* Replace the generic hover block so it only affects non-variants
+   and make selectors tolerate either id or class on the table */
+:is(#task-table, .task-table) .actions .action-btn:not(.edit):not(.edit-btn):not(.complete):not(.complete-btn):not(.delete):not(.delete-btn) {
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--accent) 6%, #eef2f7);
+}
+:is(#task-table, .task-table) .actions .action-btn:not(.edit):not(.edit-btn):not(.complete):not(.complete-btn):not(.delete):not(.delete-btn):hover {
+  background: color-mix(in srgb, var(--accent) 12%, #e2e8f0);
+  border-color: color-mix(in srgb, var(--accent) 24%, #cbd5e1);
+}
+
+/* Strengthen variant selectors and cover both class name styles */
+:is(#task-table, .task-table) .actions .action-btn.edit,
+:is(#task-table, .task-table) .actions .edit-btn.action-btn {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #93c5fd, #3b82f6 58%);
+  color: #0b2357;
+  box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 4px 14px -6px rgba(59,130,246,.4);
+}
+:is(#task-table, .task-table) .actions .action-btn.edit:hover,
+:is(#task-table, .task-table) .actions .edit-btn.action-btn:hover { filter: brightness(1.05); }
+
+:is(#task-table, .task-table) .actions .action-btn.complete,
+:is(#task-table, .task-table) .actions .complete-btn.action-btn {
+  border-color: #10b981;
+  background: linear-gradient(135deg, #34d399, #10b981 58%);
+  color: #053b27;
+  box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 4px 14px -6px rgba(16,185,129,.45);
+}
+:is(#task-table, .task-table) .actions .action-btn.complete:hover,
+:is(#task-table, .task-table) .actions .complete-btn.action-btn:hover { filter: brightness(1.05); }
+
+:is(#task-table, .task-table) .actions .action-btn.delete,
+:is(#task-table, .task-table) .actions .delete-btn.action-btn {
+  border-color: #ef4444;
+  background: linear-gradient(135deg, #fca5a5, #ef4444 58%);
+  color: #3b0b0b;
+  box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 4px 14px -6px rgba(239,68,68,.45);
+}
+:is(#task-table, .task-table) .actions .action-btn.delete:hover,
+:is(#task-table, .task-table) .actions .delete-btn.action-btn:hover { filter: brightness(1.04); }
+
+/* Neutral accent applies only to non-variant buttons */
+#task-table .actions .action-btn:not(.edit):not(.edit-btn):not(.complete):not(.complete-btn):not(.delete):not(.delete-btn) {
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--accent) 6%, #eef2f7);
+}
+#task-table .actions .action-btn:not(.edit):not(.edit-btn):not(.complete):not(.complete-btn):not(.delete):not(.delete-btn):hover {
+  background: color-mix(in srgb, var(--accent) 12%, #e2e8f0);
+  border-color: color-mix(in srgb, var(--accent) 24%, #cbd5e1);
+}
+
+/* Sticky first column (opt‑in: add .sticky-first to wrapper) */
+.table-wrapper.sticky-first #task-table th:first-child,
+.table-wrapper.sticky-first #task-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: inherit;
+  box-shadow: 1px 0 0 0 var(--border-soft);
+}
+
+/* Stack to cards on small screens (opt‑in: add .stack-on-small to wrapper) */
+@media (max-width: 640px) {
+  .table-wrapper.stack-on-small #task-table thead {
+    display: none;
+  }
+  .table-wrapper.stack-on-small #task-table,
+  .table-wrapper.stack-on-small #task-table tbody,
+  .table-wrapper.stack-on-small #task-table tr,
+  .table-wrapper.stack-on-small #task-table td {
+    display: block;
+    width: 100%;
+  }
+  .table-wrapper.stack-on-small #task-table tr {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin: 0 0 10px 0;
+    box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  }
+  .table-wrapper.stack-on-small #task-table td {
+    border: 0;
+    padding: 10px 14px;
+  }
+  .table-wrapper.stack-on-small #task-table td:last-child {
+    padding-bottom: 14px;
+  }
+}
+
+/* ===== Colorful table themes (accent-driven) ===== */
+.table-wrapper {
+  /* Default theme: Mint */
+  --accent: #10b981;
+  --accent-2: #34d399;
+
+  /* Dynamic tints using modern color-mix (supported in modern browsers) */
+  --row-zebra: color-mix(in srgb, var(--accent) 8%, #ffffff);
+  --row-hover: color-mix(in srgb, var(--accent) 14%, #ffffff);
+  --row-selected: color-mix(in srgb, var(--accent) 24%, #ffffff);
+  --thead-bg: linear-gradient(90deg, color-mix(in srgb, var(--accent) 18%, #ffffff) 0%, color-mix(in srgb, var(--accent-2) 18%, #ffffff) 100%);
+  --thead-text: #0f172a;
+  --border: color-mix(in srgb, var(--accent) 18%, #d9e1e8);
+  --border-soft: color-mix(in srgb, var(--accent) 10%, #e6edf3);
+}
+
+/* Theme variants (opt-in by setting data-theme on .table-wrapper) */
+.table-wrapper[data-theme="lavender"] {
+  --accent: #8b5cf6;     /* violet */
+  --accent-2: #a78bfa;
+}
+.table-wrapper[data-theme="sunrise"] {
+  --accent: #f59e0b;     /* amber */
+  --accent-2: #fb7185;   /* rose */
+}
+.table-wrapper[data-theme="berry"] {
+  --accent: #ec4899;     /* pink */
+  --accent-2: #8b5cf6;   /* violet */
+}
+.table-wrapper[data-theme="ocean"] {
+  --accent: #06b6d4;     /* cyan */
+  --accent-2: #22d3ee;
+}
+
+/* Header: gradient stripe + subtle depth */
+#task-table thead th {
+  background: var(--thead-bg);
+  color: var(--thead-text);
+  border-bottom: 1px solid var(--border);
+  box-shadow: inset 0 -1px 0 0 color-mix(in srgb, var(--accent) 22%, #ffffff);
+}
+
+/* Row zebra/hover/selected using accent tints */
+#task-table tbody tr:nth-child(even) td { background: var(--row-zebra); }
+#task-table tbody tr:hover td { background: var(--row-hover); transition: background .18s ease; }
+
+/* Selected row gets stronger tint + left accent bar */
+#task-table tbody tr[aria-selected="true"] td {
+  background: var(--row-selected);
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--accent) 70%, #ffffff);
+}
+
+/* Completed rows remain readable in colorful themes */
+#task-table tbody tr[data-state="completed"] td {
+  color: color-mix(in srgb, #64748b 90%, var(--accent) 10%);
+  text-decoration-color: color-mix(in srgb, #64748b 60%, var(--accent) 40%);
+}
+
+/* First column sticky shadow matches accent when sticky-first is enabled */
+.table-wrapper.sticky-first #task-table th:first-child,
+.table-wrapper.sticky-first #task-table td:first-child {
+  box-shadow: 1px 0 0 0 var(--border-soft);
+}
+
+/* Action buttons: subtle accent on hover */
+#task-table .actions .action-btn {
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--accent) 6%, #eef2f7);
+}
+#task-table .actions .action-btn:hover {
+  background: color-mix(in srgb, var(--accent) 12%, #e2e8f0);
+  border-color: color-mix(in srgb, var(--accent) 24%, #cbd5e1);
+}
+
+/* Optional: status/priority chips if you render them inside cells */
+#task-table .status-pill,
+#task-table .tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--accent) 12%, #ffffff);
+  color: #0f172a;
+}
+#task-table .status-pill::before {
+  content: '';
+  width: 6px; height: 6px; border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, #ffffff);
+}
+
+/* Priority variants (apply class on the pill or row) */
+#task-table .status-pill.high,
+#task-table tr.priority-high td .status-pill {
+  background: color-mix(in srgb, #ef4444 12%, #fff);
+  border-color: color-mix(in srgb, #ef4444 28%, #e6edf3);
+}
+#task-table .status-pill.med,
+#task-table tr.priority-med td .status-pill {
+  background: color-mix(in srgb, #f59e0b 12%, #fff);
+  border-color: color-mix(in srgb, #f59e0b 28%, #e6edf3);
+}
+#task-table .status-pill.low,
+#task-table tr.priority-low td .status-pill {
+  background: color-mix(in srgb, #10b981 12%, #fff);
+  border-color: color-mix(in srgb, #10b981 28%, #e6edf3);
+}
+
+/* Small-screen card view keeps colorful edges */
+@media (max-width: 640px) {
+  .table-wrapper.stack-on-small #task-table tr {
+    border-color: var(--border);
+    box-shadow:
+      0 1px 2px rgba(0,0,0,.04),
+      inset 3px 0 0 color-mix(in srgb, var(--accent) 55%, #ffffff);
+  }
+}

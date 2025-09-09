@@ -1,0 +1,14 @@
+/* Central aggregator (no layer syntax on @import for compatibility) */
+@import "./00-reset.css";
+@import "./01-tokens.css";
+@import "./02-base.css";
+@import "./03-typography.css";
+@import "./10-layout.css";
+@import "./20-components-header.css";
+@import "./20-components-buttons.css";
+@import "./20-components-forms.css";
+@import "./20-components-modal.css";
+@import "./20-components-table.css";
+@import "./30-utilities.css";
+@import "./40-theme-light.css";
+/* Optional dark theme: @import "./40-theme-dark.css"; */

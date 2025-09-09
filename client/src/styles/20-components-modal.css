@@ -1,0 +1,7 @@
+.m-overlay { position:fixed; inset:0; background:rgba(15,23,42,.45); backdrop-filter:blur(2px); display:flex; justify-content:center; align-items:flex-start; padding:48px 16px 40px; z-index:1000; }
+.m-panel { width:100%; max-width:540px; background:#fff; border:2px solid #c3ccd4; border-radius:16px; box-shadow:var(--sh-panel); display:flex; flex-direction:column; animation:mFadeIn .22s ease; }
+@keyframes mFadeIn { from{opacity:0; transform:translateY(14px) scale(.97);} to{opacity:1; transform:translateY(0) scale(1);} }
+.m-head { display:flex; justify-content:space-between; align-items:center; padding:12px 22px 11px; border-bottom:2px solid var(--c-border-soft); background:#fafbfc; }
+.m-body { padding:20px 22px 8px; display:flex; flex-direction:column; gap:12px; }
+.m-footer { display:flex; justify-content:flex-end; gap:10px; padding:14px 22px 18px; border-top:2px solid var(--c-border-soft); }
+.m-close { width:34px; height:34px; border:1px solid var(--c-border); background:#eef1f4; border-radius:8px; cursor:pointer; }

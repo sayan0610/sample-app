@@ -1,104 +1,109 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { TaskService } from '../services/TaskService.js';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
-const API_URL = `${API_BASE.replace(/\/+$/,'')}/api/tasks`;
+const service = new TaskService();
 
 export function useTasks() {
   const [tasks, setTasks] = useState([]);
-  const [filter, setFilter] = useState('all');
-  const [loading, setLoading] = useState(false);
+  const [filter, setFilter] = useState('');
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const abortRef = useRef(null);
 
-  const fetchTasks = useCallback(async () => {
+  const load = useCallback(async () => {
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
     setLoading(true);
     setError('');
     try {
-      const r = await fetch(`${API_URL}?filter=${filter}`);
-      if (!r.ok) throw new Error(await r.text());
-      const data = await r.json();
-      setTasks(data);
+      const list = await service.list(ctrl.signal);
+      setTasks(list);
     } catch (e) {
-      setError(e.message || 'Fetch error');
+      if (e.name !== 'AbortError') setError(e.message);
     } finally {
       setLoading(false);
     }
-  }, [filter]);
+  }, []);
 
   useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
+    load();
+    return () => abortRef.current?.abort();
+  }, [load]);
 
-  async function addTask(input) {
-    const payload = typeof input === 'string'
-      ? { title: input }
-      : { title: input.title, details: input.details ?? null };
+  const guarded = async (fn) => {
+    try { return await fn(); }
+    catch (e) { setError(e.message); throw e; }
+  };
 
-    const res = await fetch('/api/tasks', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    if (!res.ok) throw new Error('Create failed');
-    const data = await res.json();
-    setTasks(t => [data, ...t]);
-  }
+  const addTask = useCallback((input) => guarded(async () => {
+    const newTask = await service.create(
+      typeof input === 'string' ? { title: input, details: null } : input
+    );
+    setTasks(t => [newTask, ...t]);
+  }), []);
 
-  async function updateTask(id, patch) {
-    const r = await fetch(`${API_URL}/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(patch)
-    });
-    if (!r.ok) throw new Error('Update failed');
-    fetchTasks();
-  }
+  const updateTask = useCallback((id, patch) => guarded(async () => {
+    setTasks(t => t.map(tsk => tsk.id === id ? tsk.withChanges(patch) : tsk));
+    try {
+      const saved = await service.update(id, patch);
+      setTasks(t => t.map(tsk => tsk.id === id ? saved : tsk));
+    } catch (e) {
+      await load(); // rollback by reload
+      throw e;
+    }
+  }), [load]);
 
-  async function replaceTask(id, body) {
-    const r = await fetch(`${API_URL}/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    if (!r.ok) throw new Error('Replace failed');
-    fetchTasks();
-  }
+  const deleteTask = useCallback((id) => guarded(async () => {
+    const prev = tasks;
+    setTasks(t => t.filter(tsk => tsk.id !== id));
+    try {
+      await service.remove(id);
+    } catch (e) {
+      setTasks(prev); throw e;
+    }
+  }), [tasks]);
 
-  async function deleteTask(id) {
-    const r = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-    if (!r.ok && r.status !== 204) throw new Error('Delete failed');
-    fetchTasks();
-  }
+  const bulkStatus = useCallback((ids, completed) => guarded(async () => {
+    const idSet = new Set(ids);
+    setTasks(t => t.map(tsk => idSet.has(tsk.id) ? tsk.withChanges({ completed }) : tsk));
+    try {
+      const updated = await service.bulkStatus(ids, completed);
+      const map = new Map(updated.map(u => [u.id, u]));
+      setTasks(t => t.map(tsk => map.get(tsk.id) || tsk));
+    } catch (e) {
+      await load(); throw e;
+    }
+  }), [load]);
 
-  async function bulkStatus(ids, completed) {
-    await fetch(`${API_URL}/bulk/status`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids, completed })
-    });
-    fetchTasks();
-  }
+  const bulkDelete = useCallback((ids) => guarded(async () => {
+    const idSet = new Set(ids);
+    const prev = tasks;
+    setTasks(t => t.filter(tsk => !idSet.has(tsk.id)));
+    try {
+      await service.bulkDelete(ids);
+    } catch (e) {
+      setTasks(prev); throw e;
+    }
+  }), [tasks]);
 
-  async function bulkDelete(ids) {
-    await fetch(`${API_URL}/bulk/delete`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids })
-    });
-    fetchTasks();
-  }
+  const visible = tasks.filter(t =>
+    !filter.trim() ||
+    t.title.toLowerCase().includes(filter.toLowerCase())
+  );
 
   return {
-    tasks,
+    tasks: visible,
+    rawTasks: tasks,
     filter,
     setFilter,
     loading,
     error,
     addTask,
     updateTask,
-    replaceTask,
     deleteTask,
     bulkStatus,
     bulkDelete,
-    refetch: fetchTasks
+    reload: load
   };
 }

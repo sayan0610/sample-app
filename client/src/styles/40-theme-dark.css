@@ -1,0 +1,11 @@
+:root.dark {
+  --c-bg:#0f172a;
+  --c-surface:#1e293b;
+  --c-surface-alt:#273549;
+  --c-text:#f1f5f9;
+  --c-text-dim:#94a3b8;
+  --c-border:#334155;
+  --c-border-soft:#273549;
+  --c-primary:#3b82f6;
+  background:#0f172a;
+}
