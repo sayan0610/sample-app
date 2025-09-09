@@ -1,59 +1,65 @@
-# Sample App (Tasks Manager)
+# Task Manager (Full‑stack)
 
-Full‑stack task manager with:
-- Backend: Node.js + Express + PostgreSQL
+React + Vite frontend with an Express + PostgreSQL API. Features include CRUD, filters, bulk actions, completion audit, and a modern, themeable table.
+
+## Stack
 - Frontend: React (Vite)
-- Features: CRUD, inline rename, status toggle (pending/completed), details, filters, bulk select (delete / set status), responsive table.
+- Backend: Node.js (Express)
+- DB: PostgreSQL (pg)
 
-## Folder Structure
+## Repo layout
 ```
 sample-app/
-  server/            # Express + DB layer
-  client/            # React (Vite) frontend
-  public/            # (If still serving legacy static assets)
-  server/index.js    # API entry
-  server/db.js       # PostgreSQL pool
-  server/database.sql (optional schema file)
+  client/                     # React app
+    src/
+      components/             # UI components
+      hooks/                  # Data hooks
+      styles/                 # CSS (see below)
+      main.jsx                # App entry
+    public/                   # Static assets
+  server/                     # Express API
+    index.js                  # API entry
+    db.js                     # PG pool
+    database.sql              # Schema (optional helper)
 ```
 
 ## Prerequisites
-- Node 18+ (or 20+ recommended)
-- PostgreSQL 16 (Homebrew on macOS)
-- npm
+- Node.js 18+ (20+ recommended)
+- PostgreSQL 14+ running locally
 
-## Database Setup
-
-Open psql (role that can create roles/db):
+## Database setup
+Option A — run provided SQL
 ```sh
-psql -d postgres
+psql -d postgres -f server/database.sql
 ```
-Inside psql:
+
+Option B — manual
 ```sql
 CREATE ROLE task_user WITH LOGIN PASSWORD 'strongpassword';
 CREATE DATABASE task_storage OWNER task_user;
 \c task_storage;
--- (Optional) Create schema if server auto-init was disabled:
-CREATE TYPE IF NOT EXISTS task_status AS ENUM ('pending','in_progress','completed');
-CREATE TABLE IF NOT EXISTS tasks (
+CREATE TYPE task_status AS ENUM ('pending','in_progress','completed');
+CREATE TABLE tasks (
   id SERIAL PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
   description TEXT,
   status task_status DEFAULT 'pending',
   created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  completion_reason TEXT,
+  completion_signature TEXT,
+  completed_at TIMESTAMPTZ
 );
 ```
-Quit: `\q`
 
-Test:
+## Run the API
 ```sh
-psql -U task_user -d task_storage -c "SELECT 1;"
+cd server
+npm install
+npm run dev   # http://localhost:3000
 ```
-
-## Backend Environment (.env)
-Create at project root if you want overrides:
+Environment (optional, defaults shown):
 ```
-# .env
 PGHOST=localhost
 PGPORT=5432
 PGDATABASE=task_storage
@@ -61,93 +67,131 @@ PGUSER=task_user
 PGPASSWORD=strongpassword
 PORT=3000
 ```
+On first run, the server seeds a couple of tasks.
 
-## Frontend Environment (client/.env.local)
-```
-VITE_API_BASE=http://localhost:3000
-```
-
-## Install & Run
-
-Backend (root):
-```sh
-npm install   # installs server dependencies
-npm run dev   # starts API with nodemon at http://localhost:3000
-```
-
-Frontend:
+## Run the UI
 ```sh
 cd client
 npm install
-npm run dev   # Vite dev server (typically http://localhost:5173)
 ```
 
-The React app uses `VITE_API_BASE` to call the API.
+Pick ONE of these:
 
-## API Summary
-
-| Method | Endpoint                          | Body (JSON)                         | Description                          |
-|--------|-----------------------------------|-------------------------------------|--------------------------------------|
-| GET    | /api/health                       | –                                   | Health + task count                  |
-| GET    | /api/tasks?filter=all|completed|incomplete | –                       | List tasks w/ optional filter        |
-| GET    | /api/tasks/:id                    | –                                   | Get single task                      |
-| POST   | /api/tasks                        | { title, details? }                 | Create pending task                  |
-| PUT    | /api/tasks/:id                    | { title, details, completed }       | Full replace (status via completed)  |
-| PATCH  | /api/tasks/:id                    | partial: title/details/completed    | Partial update                       |
-| DELETE | /api/tasks/:id                    | –                                   | Delete task                          |
-| PUT    | /api/tasks/bulk/status            | { ids:[], completed:true|false }    | Bulk status update                   |
-| POST   | /api/tasks/bulk/delete            | { ids:[] }                          | Bulk delete                          |
-
-Response task shape (frontend): 
+A) Direct API URL (recommended)
 ```
-{ id, title, details, completed }
+# client/.env.local
+VITE_API_URL=http://localhost:3000
 ```
-Internally `status` (enum) is mapped to `completed` boolean.
+Then:
+```sh
+npm run dev   # http://localhost:5173
+```
 
-## Seeding
-Server auto-seeds two sample tasks if the table is empty at startup.
+B) Vite dev proxy (no env var)
+Add to vite.config.js:
+```js
+export default {
+  server: {
+    proxy: {
+      '/api': { target: 'http://localhost:3000', changeOrigin: true }
+    }
+  }
+}
+```
+Then:
+```sh
+npm run dev
+```
+
+## API endpoints
+- GET /api/health
+- GET /api/tasks?filter=all|completed|incomplete
+- GET /api/tasks/:id
+- POST /api/tasks            { title, details? }
+- PATCH /api/tasks/:id       partial { title?, details?, completed?, completionReason?, completionSignature? }
+- PUT /api/tasks/:id         full update { title, details, completed, completionReason?, completionSignature? }
+- POST /api/tasks/bulk/delete { ids: number[] }
+
+Response task shape:
+```json
+{
+  "id": 1,
+  "title": "Sample",
+  "details": "text",
+  "completed": false,
+  "completionReason": null,
+  "completionSignature": null,
+  "completedAt": null
+}
+```
+
+## Styling guide
+The UI uses a small, scalable CSS structure.
+
+Imports (client/src/main.jsx):
+```js
+import './styles/globals.css';     // reset + tokens + base + utilities
+import './styles/components.css';  // imports all component CSS (see below)
+import './styles/app.css';         // header + page layout + banners
+```
+
+Components aggregator (client/src/styles/components.css) imports:
+- 20-components-header.css
+- 20-components-buttons.css
+- 20-components-forms.css
+- 20-components-modal.css
+- 20-components-table.css
+- 20-components-filter.css
+- 20-components-bulk-actions.css
+
+Table theming
+- Colorful themes via data-theme on the wrapper: lavender | sunrise | berry | ocean (default is mint).
+- Density via data-density on the wrapper: compact | cozy.
+Example:
+```jsx
+<div className="table-wrapper" data-theme="lavender" data-density="compact">
+  <table id="task-table">…</table>
+</div>
+```
+
+Dark theme (optional)
+- Variables for dark live in styles/40-theme-dark.css. Import it in main.jsx to enable toggling.
+```js
+// main.jsx (optional)
+import './styles/40-theme-dark.css';
+// Toggle: document.documentElement.classList.toggle('dark', true);
+```
+
+## Common issues
+- Unexpected token '<' … not valid JSON
+  - The frontend received HTML instead of JSON. Ensure:
+    - VITE_API_URL points to the API (http://localhost:3000), or
+    - Vite proxy is configured and you call relative /api/… URLs.
+  - Confirm in DevTools Network that /api/* returns application/json.
+
+- “Failed to resolve import './styles/app.css'”
+  - Ensure the file exists at client/src/styles/app.css or remove the import.
+
+- Styles not applying / colors missing on table action buttons
+  - Buttons should have classes: action-btn edit | complete | delete (or edit-btn/complete-btn/delete-btn with action-btn). The table CSS includes variants for both.
+
+- Favicon 404
+  - Add a favicon file to client/public and reference it in index.html, or use Vite’s default vite.svg.
 
 ## Scripts
-Root:
-- `npm run dev` – start API (nodemon)
-- `npm start` – start API (node)
+Backend:
+- npm run dev — start API with nodemon
+- npm start — start API with node
 
-Client:
-- `npm run dev` – Vite dev
-- `npm run build` – Production build to `client/dist`
-- `npm run preview` – Preview built assets
+Frontend:
+- npm run dev — Vite dev server
+- npm run build — production build to client/dist
+- npm run preview — serve built assets locally
 
-## Deploy Notes
-- Build frontend: `cd client && npm run build`
-- Serve `client/dist` from a static host or via Express (e.g., copy dist to a public path and add a catch‑all route).
-- Set production env vars (never commit real passwords).
-- Ensure SSL for production Postgres or use managed service (Neon, Supabase, RDS).
-
-## Common Issues / Troubleshooting
-
-| Symptom | Fix |
-|---------|-----|
-| `permission denied for table tasks` | Adjust ownership: `ALTER TABLE tasks OWNER TO task_user;` and grant sequence usage. |
-| `role "task_user" does not exist` | Create role + DB (see setup). |
-| Frontend 404 on API | Check `VITE_API_BASE` and CORS in server. |
-| Bulk buttons disabled | Need >1 checkbox selected. |
-| Module warning (ESM) | Ensure `"type": "module"` in package.json. |
-
-## Adding New Fields
-1. ALTER TABLE to add column (e.g. `priority`).
-2. Update selects in server (add field).
-3. Map field in `mapRow`.
-4. Expose in React components.
-
-## Development Flow
-1. Start Postgres (Homebrew auto service).
-2. `npm run dev` (API)
-3. `cd client && npm run dev` (UI)
-4. Modify server or client – hot reload refreshes.
+## Deployment (static hosting for UI)
+- Build UI: cd client && npm run build (outputs client/dist)
+- Host dist/ with any static host (GitHub Pages, Netlify, etc.)
+- API must be deployed separately (Render, Railway, Fly.io, etc.). Set VITE_API_URL to the deployed API URL and rebuild.
 
 ## License
-Internal sample / educational. Add your license text if publishing.
-
----
-
-Need Docker, tests, or auth next? Ask. 
+Educational sample. Add your license text if publishing.
