@@ -2,23 +2,13 @@
 
 /* Wrapper: scrollable, elevated card */
 .table-wrapper {
-  --row-py: 10px;
-  --cell-px: 14px;
-  --row-min-h: 44px;
-  --thead-bg: var(--c-surface-alt, #f1f5f9);
-  --thead-text: #334155;
-  --row-zebra: #fafcff;
-  --row-hover: #f0f6ff;
-  --row-selected: #e0ecff;
-  --border: var(--c-border, #d9e1e8);
-  --border-soft: var(--c-border-soft, #e6edf3);
-
-  width: 100%;
-  overflow: auto;
-  background: var(--c-surface, #fff);
-  border: 1px solid var(--border);
+  /* ensure white surface distinct from page */
+  background: var(--c-surface);        /* was #fff */
+  border: 1px solid var(--c-border, #d9e1e8);
   border-radius: 14px;
-  box-shadow: 0 2px 4px -1px rgba(0,0,0,.06);
+  box-shadow:
+    0 6px 18px -8px rgba(15,23,42,.25),
+    0 2px 8px rgba(15,23,42,.08);
 }
 
 /* Density presets (set on .table-wrapper) */
