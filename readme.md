@@ -1,197 +1,109 @@
-# Task Manager (Full‑stack)
+# Task Manager — gRPC‑Web (React + Node + Envoy)
 
-React + Vite frontend with an Express + PostgreSQL API. Features include CRUD, filters, bulk actions, completion audit, and a modern, themeable table.
+Modern React (Vite) client talking to a Node gRPC server via Envoy gRPC‑Web. No REST required.
 
-## Stack
-- Frontend: React (Vite)
-- Backend: Node.js (Express)
-- DB: PostgreSQL (pg)
-
-## Repo layout
-```
-sample-app/
-  client/                     # React app
-    src/
-      components/             # UI components
-      hooks/                  # Data hooks
-      styles/                 # CSS (see below)
-      main.jsx                # App entry
-    public/                   # Static assets
-  server/                     # Express API
-    index.js                  # API entry
-    db.js                     # PG pool
-    database.sql              # Schema (optional helper)
-```
+## Architecture
+- Client (React + Vite) → gRPC‑Web → Envoy (8080) → gRPC Server (Node, 50051)
+- Protobuf schema: `API/grpc/tasks.proto`
+- Client stubs: pre‑generated JS in `client/proto-stubs/` (no build step needed unless you change the proto)
 
 ## Prerequisites
 - Node.js 18+ (20+ recommended)
-- PostgreSQL 14+ running locally
+- Docker (for running Envoy), or install Envoy locally
+- Optional (only if you regenerate stubs): `protoc` and `protoc-gen-grpc-web`
 
-## Database setup
-Option A — run provided SQL
-```sh
-psql -d postgres -f server/database.sql
+## Repository layout
 ```
-
-Option B — manual
-```sql
-CREATE ROLE task_user WITH LOGIN PASSWORD 'strongpassword';
-CREATE DATABASE task_storage OWNER task_user;
-\c task_storage;
-CREATE TYPE task_status AS ENUM ('pending','in_progress','completed');
-CREATE TABLE tasks (
-  id SERIAL PRIMARY KEY,
-  title VARCHAR(255) NOT NULL,
-  description TEXT,
-  status task_status DEFAULT 'pending',
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now(),
-  completion_reason TEXT,
-  completion_signature TEXT,
-  completed_at TIMESTAMPTZ
-);
+sample-app/
+  API/
+    grpc/
+      server.js       # Node gRPC server (in‑memory tasks)
+      tasks.proto     # Service + messages
+    package.json
+  client/
+    src/
+      services/TaskServiceGrpcWeb.js  # Client API wrapper
+      ... UI, hooks, styles ...
+    proto-stubs/      # Generated JS stubs consumed by the client
+    package.json
+    .env              # VITE_GRPC_WEB_ENDPOINT=http://localhost:8080
+  envoy/
+    envoy-docker.yaml # Use with Docker (routes to host.docker.internal:50051)
+    envoy-local.yaml  # Use with a locally installed Envoy (routes to 127.0.0.1:50051)
 ```
 
-## Run the API
-```sh
-cd server
-npm install
-npm run dev   # http://localhost:3000
-```
-Environment (optional, defaults shown):
-```
-PGHOST=localhost
-PGPORT=5432
-PGDATABASE=task_storage
-PGUSER=task_user
-PGPASSWORD=strongpassword
-PORT=3000
-```
-On first run, the server seeds a couple of tasks.
+## Quick start (development)
 
-## Run the UI
-```sh
+1) Install dependencies
+```bash
+cd API && npm install
+cd ../client && npm install
+```
+
+2) Start the gRPC server (50051)
+```bash
+cd API
+npm start
+# env (optional): GRPC_HOST=0.0.0.0 GRPC_PORT=50051
+```
+
+3) Start Envoy (8080) — pick ONE
+
+- Using Docker (from repo root):
+```bash
+docker run -d --name sample-envoy -p 8080:8080 -p 9901:9901 \
+  -v "$(pwd)/envoy/envoy-docker.yaml":/etc/envoy/envoy.yaml \
+  envoyproxy/envoy:v1.30.2
+# Admin UI: http://localhost:9901  (ready/clusters)
+```
+
+- Using a locally installed Envoy:
+```bash
+envoy -c envoy/envoy-local.yaml --log-level info
+```
+
+4) Start the client (5173)
+```bash
 cd client
-npm install
-```
-
-Pick ONE of these:
-
-A) Direct API URL (recommended)
-```
-# client/.env.local
-VITE_API_URL=http://localhost:3000
-```
-Then:
-```sh
-npm run dev   # http://localhost:5173
-```
-
-B) Vite dev proxy (no env var)
-Add to vite.config.js:
-```js
-export default {
-  server: {
-    proxy: {
-      '/api': { target: 'http://localhost:3000', changeOrigin: true }
-    }
-  }
-}
-```
-Then:
-```sh
 npm run dev
+# opens http://localhost:5173
 ```
 
-## API endpoints
-- GET /api/health
-- GET /api/tasks?filter=all|completed|incomplete
-- GET /api/tasks/:id
-- POST /api/tasks            { title, details? }
-- PATCH /api/tasks/:id       partial { title?, details?, completed?, completionReason?, completionSignature? }
-- PUT /api/tasks/:id         full update { title, details, completed, completionReason?, completionSignature? }
-- POST /api/tasks/bulk/delete { ids: number[] }
+That’s it. The client calls Envoy at `VITE_GRPC_WEB_ENDPOINT` (see `client/.env`), which forwards to the gRPC server.
 
-Response task shape:
-```json
-{
-  "id": 1,
-  "title": "Sample",
-  "details": "text",
-  "completed": false,
-  "completionReason": null,
-  "completionSignature": null,
-  "completedAt": null
-}
+## Regenerate client stubs (optional)
+Only if you change `tasks.proto`.
+```bash
+cd client
+npm run proto:gen
 ```
+Requires `protoc` and the `protoc-gen-grpc-web` plugin available in your PATH.
 
-## Styling guide
-The UI uses a small, scalable CSS structure.
+## Troubleshooting
+- Envoy returns 503 on POST /tasks.Tasks/*
+  - Ensure the gRPC server is running on 50051.
+  - If using Docker, `envoy-docker.yaml` targets `host.docker.internal:50051`.
+  - Check Envoy admin: http://localhost:9901/clusters (look for connect failures).
 
-Imports (client/src/main.jsx):
-```js
-import './styles/globals.css';     // reset + tokens + base + utilities
-import './styles/components.css';  // imports all component CSS (see below)
-import './styles/app.css';         // header + page layout + banners
-```
+- CORS errors in the browser
+  - Allowed origin `http://localhost:5173` is configured in both Envoy configs.
+  - Make sure the UI runs on 5173 or update the CORS regex in the Envoy config.
 
-Components aggregator (client/src/styles/components.css) imports:
-- 20-components-header.css
-- 20-components-buttons.css
-- 20-components-forms.css
-- 20-components-modal.css
-- 20-components-table.css
-- 20-components-filter.css
-- 20-components-bulk-actions.css
+- Port conflicts
+  - Change the client port via Vite (`--port`), or update Envoy listener port in the YAML.
+  - You can also change the gRPC server port via `GRPC_PORT`, but then update the Envoy target.
 
-Table theming
-- Colorful themes via data-theme on the wrapper: lavender | sunrise | berry | ocean (default is mint).
-- Density via data-density on the wrapper: compact | cozy.
-Example:
-```jsx
-<div className="table-wrapper" data-theme="lavender" data-density="compact">
-  <table id="task-table">…</table>
-</div>
-```
-
-Dark theme (optional)
-- Variables for dark live in styles/40-theme-dark.css. Import it in main.jsx to enable toggling.
-```js
-// main.jsx (optional)
-import './styles/40-theme-dark.css';
-// Toggle: document.documentElement.classList.toggle('dark', true);
-```
-
-## Common issues
-- Unexpected token '<' … not valid JSON
-  - The frontend received HTML instead of JSON. Ensure:
-    - VITE_API_URL points to the API (http://localhost:3000), or
-    - Vite proxy is configured and you call relative /api/… URLs.
-  - Confirm in DevTools Network that /api/* returns application/json.
-
-- “Failed to resolve import './styles/app.css'”
-  - Ensure the file exists at client/src/styles/app.css or remove the import.
-
-- Styles not applying / colors missing on table action buttons
-  - Buttons should have classes: action-btn edit | complete | delete (or edit-btn/complete-btn/delete-btn with action-btn). The table CSS includes variants for both.
-
-- Favicon 404
-  - Add a favicon file to client/public and reference it in index.html, or use Vite’s default vite.svg.
+- Want to use REST instead?
+  - This project is wired for gRPC‑Web. If you need REST, consider adding an HTTP gateway or a separate REST API.
 
 ## Scripts
-Backend:
-- npm run dev — start API with nodemon
-- npm start — start API with node
+- API: `npm start` (prod), `npm run dev` (nodemon)
+- Client: `npm run dev`
+- Client (optional): `npm run proto:gen` to regenerate stubs
 
-Frontend:
-- npm run dev — Vite dev server
-- npm run build — production build to client/dist
-- npm run preview — serve built assets locally
-
-## Deployment (static hosting for UI)
-- Build UI: cd client && npm run build (outputs client/dist)
-- Host dist/ with any static host (GitHub Pages, Netlify, etc.)
-- API must be deployed separately (Render, Railway, Fly.io, etc.). Set VITE_API_URL to the deployed API URL and rebuild.
+## Notes
+- The server uses an in‑memory store for demo/dev. Swap with a DB in `API/grpc/server.js` as needed.
+- The client bundles pre‑generated JS stubs (`client/proto-stubs/`) for zero‑friction Vite dev.
 
 ## License
-Educational sample. Add your license text if publishing.
+Educational sample. Add your license if publishing.

@@ -1,0 +1,4 @@
+
+> start
+> node grpc/server.js
+

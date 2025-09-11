@@ -4,6 +4,8 @@
 @import "./20-components-forms.css";
 @import "./20-components-modal.css";
 @import "./20-components-table.css";
+@import "./20-components-pagination.css";  /* NEW */
+@import "./20-components-sort.css";        /* keep if you created it */
 /* (Optional) add if those files exist */
  @import "./20-components-filter.css";
 @import "./20-components-bulk-actions.css";

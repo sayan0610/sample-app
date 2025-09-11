@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { TaskService } from '../services/TaskService.js';
+import { TaskService } from '../services/TaskServiceGrpcWeb';
 
-const service = new TaskService();
+const service = TaskService;
 
 export function useTasks() {
   const [tasks, setTasks] = useState([]);

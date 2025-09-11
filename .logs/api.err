@@ -1,0 +1,5 @@
+E No address added out of total 1 resolved
+gRPC failed to start: Error: No address added out of total 1 resolved errors: [listen EADDRINUSE: address already in use 0.0.0.0:50051]
+    at Server.bindAddressList (/Users/jiniapiku/Sayan Code/sample-app/API/node_modules/@grpc/grpc-js/build/src/server.js:490:27)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Server.bindPort (/Users/jiniapiku/Sayan Code/sample-app/API/node_modules/@grpc/grpc-js/build/src/server.js:520:36)

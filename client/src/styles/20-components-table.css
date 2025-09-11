@@ -423,3 +423,38 @@
       inset 3px 0 0 color-mix(in srgb, var(--accent) 55%, #ffffff);
   }
 }
+
+/* Removed pagination styles (now in 20-components-pagination.css):
+   .pagination { ... }
+   .pagination .page-info { ... }
+   .pagination .page-controls { ... }
+   .pagination .page-btn { ... }
+   .pagination .page-btn:hover { ... }
+   .pagination .page-btn[aria-current="page"] { ... }
+   .pagination .page-btn:disabled { ... }
+   .pagination .page-size select { ... }
+   .pagination .page-size select:focus { ... }
+*/
+
+/* Actions column: align header + cells and keep enough width */
+:is(#task-table, .task-table) thead th:last-child,
+:is(#task-table, .task-table) tbody td:last-child {
+  text-align: right;
+  white-space: nowrap;
+}
+
+:is(#task-table, .task-table) tbody td:last-child .actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  width: 100%;
+}
+
+/* Give the actions column breathing room on wider screens */
+@media (min-width: 740px) {
+  :is(#task-table, .task-table) thead th:last-child,
+  :is(#task-table, .task-table) tbody td:last-child {
+    width: 220px;
+  }
+}

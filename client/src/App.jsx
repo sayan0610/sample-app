@@ -7,12 +7,6 @@ import TaskTable from './components/TaskTable.jsx';
 import TaskEditModal from './components/TaskEditModal.jsx';
 import CompleteTaskModal from './components/CompleteTaskModal.jsx';
 
-console.log('VITE_API_URL =', import.meta.env.VITE_API_URL);
-
-fetch((import.meta.env.VITE_API_URL || '') + '/api/tasks')
-  .then(r => { console.log('content-type', r.headers.get('content-type')); return r.text(); })
-  .then(t => { console.log('raw', t.slice(0,120)); try { console.log(JSON.parse(t)); } catch(e){ console.error('Not JSON', e);} });
-
 export default function App() {
   const {
     tasks, filter, setFilter, loading, error,
