@@ -8,7 +8,11 @@ export default function TaskTable({
   onSelectOne,
   onEdit,
   onDeleteTask,
-  onRequestComplete
+  onRequestComplete,
+  onBulkComplete,
+  onBulkDelete,
+  onFilterChange,
+  filterValue
 }) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20); // NEW: 10 | 20 | 50 | 100
@@ -54,7 +58,31 @@ export default function TaskTable({
 
   return (
     <>
-      <div className="pagination top" role="region" aria-label="Task pagination">
+      <div className="pagination top" role="region" aria-label="Task controls and pagination">
+        <div className="top-left-cluster" style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+          <div className="filter-bar inline">
+            <select value={filterValue} onChange={e=>onFilterChange && onFilterChange(e.target.value)} aria-label="Filter tasks">
+              <option value="all">All</option>
+              <option value="completed">Completed</option>
+              <option value="incomplete">In-Progress</option>
+            </select>
+          </div>
+          <span className="ba-count" aria-live="polite">{selectedCount} selected</span>
+          <button
+            type="button"
+            className="ba-btn primary"
+            onClick={onBulkComplete}
+            disabled={selectedCount===0}
+            aria-disabled={selectedCount===0}
+          >Complete</button>
+          <button
+            type="button"
+            className="ba-btn danger"
+            onClick={onBulkDelete}
+            disabled={selectedCount===0}
+            aria-disabled={selectedCount===0}
+          >Delete</button>
+        </div>
         <div className="page-size">
           <label>
             <span className="sr-only">Items per page</span>
@@ -67,9 +95,7 @@ export default function TaskTable({
           </label>
         </div>
 
-        <span className="page-info">
-          Showing {showingStart}–{showingEnd} of {total}
-        </span>
+  <span className="page-info">Showing {showingStart}–{showingEnd} of {total}</span>
 
         <div className="page-controls">
           <button className="page-btn" onClick={() => goto(1)} disabled={clampedPage === 1} aria-label="First page">«</button>
@@ -102,9 +128,9 @@ export default function TaskTable({
                 />
               </th>
               <ThSort label="Title" active={sortBy === 'title'} dir={sortDir} onClick={() => toggleSort('title')} />
-              <th scope="col">Details</th>
+              <th scope="col" className="col-details">Details</th>
               <ThSort label="Status" active={sortBy === 'completed'} dir={sortDir} onClick={() => toggleSort('completed')} />
-              <ThSort label="Created" active={sortBy === 'createdAt'} dir={sortDir} onClick={() => toggleSort('createdAt')} />
+              <ThSort label="Created" active={sortBy === 'createdAt'} dir={sortDir} onClick={() => toggleSort('createdAt')} className="col-created" />
               <th scope="col">Actions</th>
             </tr>
           </thead>
@@ -163,7 +189,7 @@ export default function TaskTable({
         </table>
       </div>
 
-      <div className="pagination bottom" role="region" aria-label="Task pagination">
+  <div className="pagination bottom" role="region" aria-label="Task pagination">
         <div className="page-size">
           <label>
             <span className="sr-only">Items per page</span>
@@ -201,10 +227,10 @@ export default function TaskTable({
   );
 }
 
-function ThSort({ label, active, dir, onClick }) {
+function ThSort({ label, active, dir, onClick, className }) {
   const ariaSort = active ? (dir === 'asc' ? 'ascending' : 'descending') : undefined;
   return (
-    <th scope="col" className="th-sort" aria-sort={ariaSort}>
+  <th scope="col" className={["th-sort", className].filter(Boolean).join(' ')} aria-sort={ariaSort}>
       <button type="button" className="th-sort-btn" onClick={onClick} aria-label={`Sort by ${label}${active ? `, ${dir}` : ''}`}>
         {label}
       </button>

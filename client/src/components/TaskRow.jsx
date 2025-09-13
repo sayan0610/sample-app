@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import MoreMenu from './MoreMenu.jsx';
 
 export default function TaskRow({
   task,
@@ -40,12 +41,19 @@ export default function TaskRow({
             {task.title}
           </span>
         </td>
+        <td className="td-details">
+          {task.details ? <span className="details-ellipsis">{task.details}</span> : <span className="details-ellipsis text-dim">—</span>}
+        </td>
         <td>
           <span className={`status-badge ${task.completed ? 'status-completed' : 'status-inprogress'}`}>
             {task.completed ? 'Completed' : 'In-Progress'}
           </span>
         </td>
+        <td className="td-created">
+          {task.createdAt ? new Date(task.createdAt).toLocaleDateString() : '—'}
+        </td>
         <td className="actions">
+          <div className="actions-desktop">
           <button
             title={task.completed ? 'Completed' : 'Mark Complete'}
             aria-label={task.completed ? 'Completed' : 'Mark Complete'}
@@ -83,11 +91,20 @@ export default function TaskRow({
           >
             ✎
           </button>
+          </div>
+          <div className="actions-mobile">
+            <MoreMenu
+              completed={task.completed}
+              onComplete={handleCompleteClick}
+              onEdit={() => onEdit(task)}
+              onDelete={() => onDelete(task.id)}
+            />
+          </div>
         </td>
       </tr>
       {expanded && (
         <tr className="detail-row">
-          <td colSpan="4">
+          <td colSpan="6">
             {task.details ? <><strong>Details:</strong> {task.details}</> : <em>No details.</em>}
             {task.completed && (task.completionReason || task.completionSignature) && (
               <div className="completion-audit">

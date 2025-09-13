@@ -8,9 +8,19 @@ const pb = pbMod.default || pbMod;
 const endpoint = import.meta.env.VITE_GRPC_WEB_ENDPOINT || 'http://localhost:8080';
 const client = new services.TasksClient(endpoint, null, null);
 
+function getAuthMetadata() {
+  try {
+    const raw = localStorage.getItem('auth_user');
+    if (!raw) return {};
+    const u = JSON.parse(raw);
+    if (u && u.token) return { Authorization: `Bearer ${u.token}` };
+  } catch {}
+  return {};
+}
+
 function call(method, req) {
   return new Promise((resolve, reject) => {
-    client[method](req, {}, (err, res) => (err ? reject(err) : resolve(res)));
+    client[method](req, getAuthMetadata(), (err, res) => (err ? reject(err) : resolve(res)));
   });
 }
 
@@ -80,7 +90,7 @@ export const TaskService = {
   async bulkDelete(ids) {
     const req = new pb.BulkDeleteRequest();
     req.setIdsList(ids.map(Number));
-    const res = await call('bulkdelete', req);
+  const res = await call('bulkDelete', req);
     return res.getDeleted();
   },
   async bulkStatus(ids, completed) {
